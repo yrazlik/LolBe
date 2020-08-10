@@ -26,4 +26,29 @@ public class UrlUtil {
 		return PROTOCOL + region.getRegionCode() + "." + API_BASE_PATH  + "/lol/spectator" + API_VERSION + "/active-games/by-summoner/" + encryptedSummonerId;
 	}
 	
+	public static String buildSummonerLeagueUrl(String regionCode, String summonerId) {
+		Region region = Region.createRegionFromRegionCode(regionCode);
+		return PROTOCOL + region.getRegionCode() + "." + API_BASE_PATH  + "/lol/league" + API_VERSION + "/entries/by-summoner/" + summonerId;
+	}
+
+	public static String buildLeagueInfoUrl(String regionCode, String queue, String tier, String division) {
+		Region region = Region.createRegionFromRegionCode(regionCode);
+		return PROTOCOL + region.getRegionCode() + "." + API_BASE_PATH  + "/lol/league" + API_VERSION + "/entries/" + queue + "/" + tier + "/" + division;
+	}
+
+	public static String buildLeagueInfoByLeagueIdUrl(String regionCode, String leagueId) {
+		Region region = Region.createRegionFromRegionCode(regionCode);
+		return PROTOCOL + region.getRegionCode() + "." + API_BASE_PATH  + "/lol/league" + API_VERSION + "/leagues/" + leagueId;
+	}
+
+	public static String buildMatchListByAccountIdUrl(String regionCode, String accountId) {
+		Region region = Region.createRegionFromRegionCode(regionCode);
+		return PROTOCOL + region.getRegionCode() + "." + API_BASE_PATH  + "/lol/match" + API_VERSION + "/matchlists/by-account/" + accountId;
+	}
+
+	public static String buildMatchDetailUrl(String regionCode, long matchId) {
+		Region region = Region.createRegionFromRegionCode(regionCode);
+		return PROTOCOL + region.getRegionCode() + "." + API_BASE_PATH  + "/lol/match" + API_VERSION + "/matches/" + matchId;
+	}
+	
 }

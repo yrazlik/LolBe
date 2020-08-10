@@ -37,7 +37,7 @@ public class DataDragonController {
 	@RequestMapping(method = RequestMethod.GET, value = "/allChampions.json")
 	public BaseResponse<AllChampionsResponse> getAllChampions(HttpServletRequest request) throws JsonSyntaxException, IOException {
 		String language = request.getHeader(PlatformConstants.HEADER_LANGUAGE);
-		String region = request.getHeader(PlatformConstants.HEADER_REGION);
+		//String region = request.getHeader(PlatformConstants.HEADER_REGION);
 		AllChampionsResponse response = dataDragonService.getAllChampions(language);
 		return new BaseResponse<AllChampionsResponse>(response);
 	}
@@ -45,10 +45,7 @@ public class DataDragonController {
 	@RequestMapping(method = RequestMethod.GET, value = "/allItems.json")
 	public BaseResponse<AllItemsResponse> getAllItems(HttpServletRequest request) throws JsonSyntaxException, IOException {
 		String language = request.getHeader(PlatformConstants.HEADER_LANGUAGE);
-		String region = request.getHeader(PlatformConstants.HEADER_REGION);
-		/*
-		AllChampionsResponse response = dataDragonService.getAllChampions(DataDragonLocale.convertToDataDragonLocale(language));
-		return new BaseResponse<AllChampionsResponse>(response);*/
+		//String region = request.getHeader(PlatformConstants.HEADER_REGION);
 		AllItemsResponse response = dataDragonService.getAllItems(language);
 		return new BaseResponse<AllItemsResponse>(response);
 	}

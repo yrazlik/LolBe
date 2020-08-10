@@ -1,5 +1,7 @@
 package com.yrazlik.lol.util;
 
+import javax.servlet.http.HttpServletRequest;
+
 public class Utils {
 
 	public static String makeFourDigit(String s) {
@@ -12,5 +14,12 @@ public class Utils {
 		}
 
 		return s;
+	}
+	
+	public static String getRegion(HttpServletRequest request, String region) {
+		if(region == null || region.equals("")) {
+			region = request.getHeader(PlatformConstants.HEADER_REGION);
+		}
+		return region;
 	}
 }

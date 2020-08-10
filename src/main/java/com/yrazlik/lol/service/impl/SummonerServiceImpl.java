@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import com.google.gson.Gson;
 import com.yrazlik.lol.httpclient.LolHttpClient;
 import com.yrazlik.lol.pojo.ChampionDto;
@@ -30,6 +31,7 @@ public class SummonerServiceImpl implements SummonerService {
 	@Autowired
 	private DataDragonService dataDragonService;
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public GetSummonerByNameResponse findSummonerByName(RequestGetSummonerByName request) {
 		String url = UrlUtil.buildSummonerSearchUrl(request.getRegion(), URLEncoder.encode(request.getSummonerName()));

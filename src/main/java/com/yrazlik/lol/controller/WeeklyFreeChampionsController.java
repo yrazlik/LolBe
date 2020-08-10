@@ -28,18 +28,5 @@ public class WeeklyFreeChampionsController {
 		WeeklyFreeRotationResponse weeklyFreeRotationsResponse = weeklyFreeRotationService.getWeeklyFreeRotation(weeklyFreeRotationRequest);
 		return new BaseResponse<WeeklyFreeRotationResponse>(weeklyFreeRotationsResponse);
 	}
-	
-	@RequestMapping(method = RequestMethod.GET, value = "/hello.json")
-	public BaseResponse<String> hello(HttpServletRequest request) throws JsonSyntaxException, IOException {
-		
-		for(int i = 0; i < 600377; i++) {
-			for(int j = 0; j < 1; j++) {
-				System.out.println(i);
-				
-			}
-		}
-		
-		return new BaseResponse<String>("Hello");
-	}
 
 }
