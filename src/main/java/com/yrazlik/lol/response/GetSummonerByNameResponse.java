@@ -9,6 +9,7 @@ public class GetSummonerByNameResponse {
 	private long profileIconId;
 	private long revisionDate;
 	private int summonerLevel;
+	private String profileIconUrl;
 	public String getId() {
 		return id;
 	}
@@ -50,6 +51,12 @@ public class GetSummonerByNameResponse {
 	}
 	public void setSummonerLevel(int summonerLevel) {
 		this.summonerLevel = summonerLevel;
+	}
+	public String getProfileIconUrl() {
+		return profileIconUrl;
+	}
+	public void setProfileIconUrl(String profileIconUrl) {
+		this.profileIconUrl = profileIconUrl;
 	}
 	
 	

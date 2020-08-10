@@ -58,6 +58,7 @@ public class SummonerServiceImpl implements SummonerService {
 		if(response.getId() == null || response.getId().equals("")) {
 			return null;
 		}
+		response.setProfileIconUrl(ServicePaths.PROFILE_ICON_BASE_URL + response.getProfileIconId() + ".png");
 		return response;
 	}
 	
