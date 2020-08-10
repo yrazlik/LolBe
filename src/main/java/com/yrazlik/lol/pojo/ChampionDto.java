@@ -10,7 +10,7 @@ public class ChampionDto {
 	@SerializedName("id")
 	private String champId;
 	@SerializedName("nulll")
-	private int id;
+	private long id;
 	private String key;
 	private String name;
 	private String title;
@@ -45,10 +45,10 @@ public class ChampionDto {
 	public void setChampId(String champId) {
 		this.champId = champId;
 	}
-	public int getId() {
+	public long getId() {
 		return id;
 	}
-	public void setId(int id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 	public String getKey() {

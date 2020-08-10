@@ -1,5 +1,6 @@
 package com.yrazlik.lol.service.impl;
 
+import java.lang.reflect.Type;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
@@ -10,10 +11,14 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.yrazlik.lol.httpclient.LolHttpClient;
 import com.yrazlik.lol.pojo.ChampionDto;
 import com.yrazlik.lol.pojo.CurrentGameParticipantDto;
+import com.yrazlik.lol.pojo.LeagueEntryDto;
 import com.yrazlik.lol.pojo.MatchListDto;
+import com.yrazlik.lol.pojo.ChampionMasteryDTO;
+import com.yrazlik.lol.request.RequestChampionMasteries;
 import com.yrazlik.lol.request.RequestGetActiveGame;
 import com.yrazlik.lol.request.RequestGetMatchListByAccountId;
 import com.yrazlik.lol.request.RequestGetSummonerByName;
@@ -46,6 +51,9 @@ public class SummonerServiceImpl implements SummonerService {
 	
 	@Autowired
 	private MatchService matchService;
+	
+	@Autowired
+	private SummonerService self;
 	
 	@Cacheable(value = "summonerByName", key="{#request?.language, #request?.region, #request?.summonerName}", unless="#result == null")
 	@SuppressWarnings("deprecation")
@@ -105,7 +113,7 @@ public class SummonerServiceImpl implements SummonerService {
 	@Override
 	public SearchSummonerByNameResponse searchSummonerByName(RequestSearchSummonerByName requestModel) {
 		RequestGetSummonerByName requestSummoner = new RequestGetSummonerByName(requestModel.getLanguage(), requestModel.getRegion(), requestModel.getSummonerName());
-		GetSummonerByNameResponse respSummoner = findSummonerByName(requestSummoner);
+		GetSummonerByNameResponse respSummoner = self.findSummonerByName(requestSummoner);
 		String summonerId = respSummoner.getId();
 		String accountId = respSummoner.getAccountId();
 		RequestGetMatchListByAccountId requestMatchList = new RequestGetMatchListByAccountId(requestModel.getLanguage(), requestModel.getRegion(), accountId);
@@ -114,12 +122,46 @@ public class SummonerServiceImpl implements SummonerService {
 		RequestGetSummonerLeague requestLeague = new RequestGetSummonerLeague(requestModel.getLanguage(), requestModel.getRegion(), summonerId);
 		SummonerLeagueInfoResponse respLeague = leagueService.getSummonerLeagueInfo(requestLeague);
 		
+		RequestChampionMasteries requestMasteries = new RequestChampionMasteries(requestModel.getLanguage(), requestModel.getRegion(), summonerId);
+		List<ChampionMasteryDTO> respMasteries = self.getSummonerChampionMasteries(requestMasteries);
 		//leagueService.get
 		
 		SearchSummonerByNameResponse response = new SearchSummonerByNameResponse();
 		response.setLeagueInfo(respLeague);
 		response.setMatchList(matchList);
 		response.setSummonerInfo(respSummoner);
+		response.setMasteries(respMasteries);
+		return response;
+	}
+
+	@Override
+	public List<ChampionMasteryDTO> getSummonerChampionMasteries(RequestChampionMasteries requestModel) {
+		AllChampionsResponse allChampions = dataDragonService.getAllChampions(requestModel.getLanguage());
+		String url = UrlUtil.buildSummonerChampionMasteriesUrl(requestModel.getRegion(), requestModel.getSummonerId());
+		RiotApiResponse riotApiResponse = lolHttpClient.makeGetRequest(url);
+		String responseBody = riotApiResponse.getBody();
+		Type listType = new TypeToken<List<ChampionMasteryDTO>>() {}.getType();
+		List<ChampionMasteryDTO> response =  new Gson().fromJson(responseBody, listType);
+		if(allChampions != null) {
+			List<ChampionDto> championList = allChampions.getChampions();
+			if (championList != null) {
+				Map<Long, ChampionDto> championsMap = new HashMap<>();
+				for(ChampionDto champ : championList) {
+					championsMap.put(champ.getId(), champ);
+				}
+				if(response != null) {
+					for(ChampionMasteryDTO mastery : response) {
+						ChampionDto dto = championsMap.get(mastery.getChampionId());
+						if(dto != null) {
+							mastery.setChampionImageUrl(ServicePaths.DATA_DRAGON_CHAMPION_IMG_BASE_PATH + dto.getChampId() + ".png");
+							mastery.setChampionName(dto.getChampId());
+						}
+						
+					}
+				}
+			}
+		}
+		
 		return response;
 	}
 

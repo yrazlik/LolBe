@@ -50,5 +50,10 @@ public class UrlUtil {
 		Region region = Region.createRegionFromRegionCode(regionCode);
 		return PROTOCOL + region.getRegionCode() + "." + API_BASE_PATH  + "/lol/match" + API_VERSION + "/matches/" + matchId;
 	}
+
+	public static String buildSummonerChampionMasteriesUrl(String regionCode, String summonerId) {
+		Region region = Region.createRegionFromRegionCode(regionCode);
+		return PROTOCOL + region.getRegionCode() + "." + API_BASE_PATH  + "/lol/champion-mastery" + API_VERSION + "/champion-masteries/by-summoner/" + summonerId;
+	}
 	
 }
