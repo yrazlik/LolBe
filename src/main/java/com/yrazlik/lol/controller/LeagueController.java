@@ -14,6 +14,7 @@ import com.yrazlik.lol.request.RequestGetLeagueInfo;
 import com.yrazlik.lol.request.RequestGetLeagueInfoByLeagueId;
 import com.yrazlik.lol.request.RequestGetSummonerLeague;
 import com.yrazlik.lol.response.BaseResponse;
+import com.yrazlik.lol.response.SummonerLeagueInfoResponse;
 import com.yrazlik.lol.service.LeagueService;
 import com.yrazlik.lol.util.PlatformConstants;
 import com.yrazlik.lol.util.Utils;
@@ -26,15 +27,15 @@ public class LeagueController {
 	private LeagueService leagueService;
 	
 	@RequestMapping(method = RequestMethod.GET, value = "/by-summoner/{region}/{summonerId}.json")
-	public BaseResponse<LeagueEntryDto> getActiveGameInfo(HttpServletRequest request, @PathVariable String summonerId, @PathVariable String region) throws JsonSyntaxException, IOException {
+	public BaseResponse<SummonerLeagueInfoResponse> getSummonerLeague(HttpServletRequest request, @PathVariable String summonerId, @PathVariable String region) throws JsonSyntaxException, IOException {
 		String language = request.getHeader(PlatformConstants.HEADER_LANGUAGE);
 		region = Utils.getRegion(request, region);
 		RequestGetSummonerLeague requestModel = new RequestGetSummonerLeague(language, region, summonerId);
-		LeagueEntryDto response = leagueService.getSummonerLeagueInfo(requestModel);
-		return new BaseResponse<LeagueEntryDto>(response);
+		SummonerLeagueInfoResponse response = leagueService.getSummonerLeagueInfo(requestModel);
+		return new BaseResponse<SummonerLeagueInfoResponse>(response);
 	}
 	
-	@RequestMapping(method = RequestMethod.GET, value = "/{region}/{queue}/{tier}/{division}.json\"")
+	@RequestMapping(method = RequestMethod.GET, value = "/{region}/{queue}/{tier}/{division}.json")
 	public BaseResponse<LeagueEntryDto> getLeagueInfo(HttpServletRequest request, @PathVariable String queue, @PathVariable String tier, @PathVariable String division, @PathVariable String region) throws JsonSyntaxException, IOException {
 		String language = request.getHeader(PlatformConstants.HEADER_LANGUAGE);
 		region = Utils.getRegion(request, region);
@@ -43,8 +44,8 @@ public class LeagueController {
 		return new BaseResponse<LeagueEntryDto>(response);
 	}
 	
-	@RequestMapping(method = RequestMethod.GET, value = "/{region}/{leagueId}.json\"")
-	public BaseResponse<LeagueListDto> getLeagueInfo(HttpServletRequest request, @PathVariable String leagueId, @PathVariable String region) throws JsonSyntaxException, IOException {
+	@RequestMapping(method = RequestMethod.GET, value = "/{region}/{leagueId}.json")
+	public BaseResponse<LeagueListDto> getLeagueInfoByLeagueId(HttpServletRequest request, @PathVariable String leagueId, @PathVariable String region) throws JsonSyntaxException, IOException {
 		String language = request.getHeader(PlatformConstants.HEADER_LANGUAGE);
 		region = Utils.getRegion(request, region);
 		RequestGetLeagueInfoByLeagueId requestModel = new RequestGetLeagueInfoByLeagueId(language, region, leagueId);

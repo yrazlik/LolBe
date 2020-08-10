@@ -38,6 +38,7 @@ import com.yrazlik.lol.request.ChampionDetailRequest;
 import com.yrazlik.lol.request.ChampionImageRequest;
 import com.yrazlik.lol.response.AllChampionsResponse;
 import com.yrazlik.lol.response.AllItemsResponse;
+import com.yrazlik.lol.response.RiotApiResponse;
 import com.yrazlik.lol.service.DataDragonService;
 import com.yrazlik.lol.util.DateUtils;
 import com.yrazlik.lol.util.ServicePaths;
@@ -100,8 +101,9 @@ public class DataDragonServiceImpl implements DataDragonService {
 	@Cacheable(value = "staticData", key="#locale", unless="#result == null")
 	public StaticDataDto getAllChampionInfoStaticData(String locale) {
 		String url = UrlUtil.buildDataDragonUrl(staticDataBaseUrl, championDataVersion, ServicePaths.DATA_DRAGON_CHAMPION_STATIC_DATA_BASE_PATH, locale, ServicePaths.DATA_DRAGON_CHAMPION_STATIC_DATA);
-		String responseStr = lolHttpClient.makeGetRequest(url);
-		StaticDataDto staticDataResponse =  new Gson().fromJson(responseStr, StaticDataDto.class);
+		RiotApiResponse riotApiResponse = lolHttpClient.makeGetRequest(url);
+		String responseBody = riotApiResponse.getBody();
+		StaticDataDto staticDataResponse =  new Gson().fromJson(responseBody, StaticDataDto.class);
 		Map<String, ChampionDto> dto = staticDataResponse.getData();
 		Map<String, ChampionDto> dtoAsKeyMap = new HashMap<>();
 		for (Map.Entry<String, ChampionDto> entry : dto.entrySet()) {
@@ -192,8 +194,9 @@ public class DataDragonServiceImpl implements DataDragonService {
 		championDetailPath = (MessageFormat.format(championDetailPath, values));
 		
 		String url = UrlUtil.buildDataDragonUrl(staticDataBaseUrl, championDataVersion, ServicePaths.DATA_DRAGON_CHAMPION_STATIC_DATA_BASE_PATH, locale, championDetailPath);
-		String responseStr = lolHttpClient.makeGetRequest(url);
-		ChampionDetailResponse championDetailResponse =  new Gson().fromJson(responseStr, ChampionDetailResponse.class);
+		RiotApiResponse riotApiResponse = lolHttpClient.makeGetRequest(url);
+		String responseBody = riotApiResponse.getBody();
+		ChampionDetailResponse championDetailResponse =  new Gson().fromJson(responseBody, ChampionDetailResponse.class);
 		Map<String, ChampionDto> dto = championDetailResponse.getData();
 
 		ChampionDto champion = dto.containsKey(championDetailRequest.getId()) ? dto.get(championDetailRequest.getId()) : null;
@@ -301,8 +304,9 @@ public class DataDragonServiceImpl implements DataDragonService {
 	@Override
 	public AllItemsResponse getAllItems(String locale) {
 		String url = UrlUtil.buildDataDragonItemsUrl(ServicePaths.ALL_ITEMS_DATA, locale);
-		String responseStr = lolHttpClient.makeGetRequest(url);
-		AllItemsDto allItemsDto =  new Gson().fromJson(responseStr, AllItemsDto.class);
+		RiotApiResponse riotApiResponse = lolHttpClient.makeGetRequest(url);
+		String responseBody = riotApiResponse.getBody();
+		AllItemsDto allItemsDto =  new Gson().fromJson(responseBody, AllItemsDto.class);
 		Map<String, ItemDto> dto = allItemsDto.getData();
 
 		List<ItemDto> items = new ArrayList<>();

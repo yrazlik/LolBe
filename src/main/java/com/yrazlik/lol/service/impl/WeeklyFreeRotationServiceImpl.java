@@ -13,6 +13,7 @@ import com.yrazlik.lol.pojo.ChampionDto;
 import com.yrazlik.lol.pojo.ChampionInfo;
 import com.yrazlik.lol.pojo.StaticDataDto;
 import com.yrazlik.lol.request.WeeklyFreeRotationRequest;
+import com.yrazlik.lol.response.RiotApiResponse;
 import com.yrazlik.lol.response.WeeklyFreeRotationResponse;
 import com.yrazlik.lol.service.DataDragonService;
 import com.yrazlik.lol.service.WeeklyFreeRotationService;
@@ -32,8 +33,9 @@ public class WeeklyFreeRotationServiceImpl implements WeeklyFreeRotationService 
 	@Cacheable(value="weeklyFreeRotation", key="{#request?.language, #request?.region}", unless="#result == null")
 	public WeeklyFreeRotationResponse getWeeklyFreeRotation(WeeklyFreeRotationRequest request) {
 		String url = UrlUtil.buildWeeklyRotationsUrl(request.getRegion(), ServicePaths.PATH_WEEKLY_FREE_ROTATION);
-		String responseStr = lolHttpClient.makeGetRequest(url);
-		ChampionInfo championInfo = new Gson().fromJson(responseStr, ChampionInfo.class);
+		RiotApiResponse riotApiResponse = lolHttpClient.makeGetRequest(url);
+		String responseBody = riotApiResponse.getBody();
+		ChampionInfo championInfo = new Gson().fromJson(responseBody, ChampionInfo.class);
 		StaticDataDto staticData = dataDragonService.getAllChampionInfoStaticData(request.getLanguage());
 		Map<String, ChampionDto> dataMap = staticData.getData() == null ? new HashMap<String, ChampionDto>() : staticData.getData();
 		List<Integer> freeChampions = championInfo.getFreeChampionIds();

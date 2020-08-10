@@ -1,14 +1,14 @@
 package com.yrazlik.lol.request;
 
-public class RequestGetSummonerByName extends BaseRequest {
+public class RequestSearchSummonerByName extends BaseRequest {
 
 	private String summonerName;
 
-	public RequestGetSummonerByName() {
+	public  RequestSearchSummonerByName() {
 		super();
 	}
 	
-	public RequestGetSummonerByName(String language, String region, String summonerName) {
+	public  RequestSearchSummonerByName(String language, String region, String summonerName) {
 		super(language, region);
 		this.summonerName = summonerName;
 	}

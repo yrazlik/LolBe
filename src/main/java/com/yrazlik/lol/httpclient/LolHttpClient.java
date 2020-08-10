@@ -7,7 +7,11 @@ import javax.annotation.PostConstruct;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+
+import com.yrazlik.lol.response.RiotApiResponse;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -37,18 +41,28 @@ public class LolHttpClient {
 				.build();
 	}
 
-	public String makeGetRequest(String url) {
+	public RiotApiResponse makeGetRequest(String url) {
+		RiotApiResponse riotApiResponse = new RiotApiResponse();
 		Request request = new Request.Builder()
                 .url(url)
                 .build();
 		Response response;
+		String body = null;
 		try {
 			response = okHttpClient.newCall(request).execute();
-			return response.body().string();
+			riotApiResponse.setStatusCode(response.code());
+			body = response.body().string();
+			riotApiResponse.setBody(body);
 		} catch (IOException e) {
+			riotApiResponse.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			LOGGER.error("Error parsing GET request response for url: " + url, e);
-			return null;
 		}
+		
+		if(riotApiResponse.getStatusCode() != HttpStatus.OK.value()) {
+			String errMsg = (body != null ? body : "Riot Api returned non 200");
+			throw new RuntimeException(errMsg);
+		}
+		return riotApiResponse;
 	}
 	
 	

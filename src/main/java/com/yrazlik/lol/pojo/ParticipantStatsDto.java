@@ -40,7 +40,7 @@ public class ParticipantStatsDto {
 	private long physicalDamageDealtToChampions;
 	private int neutralMinionsKilledTeamJungle;
 	private int totalMinionsKilled;
-	private int firstInhibitorAssist;
+	private boolean firstInhibitorAssist;
 	private int visionWardsBoughtInGame;
 	private int objectivePlayerScore;
 	private int kills;
@@ -336,10 +336,10 @@ public class ParticipantStatsDto {
 	public void setTotalMinionsKilled(int totalMinionsKilled) {
 		this.totalMinionsKilled = totalMinionsKilled;
 	}
-	public int getFirstInhibitorAssist() {
+	public boolean getFirstInhibitorAssist() {
 		return firstInhibitorAssist;
 	}
-	public void setFirstInhibitorAssist(int firstInhibitorAssist) {
+	public void setFirstInhibitorAssist(boolean firstInhibitorAssist) {
 		this.firstInhibitorAssist = firstInhibitorAssist;
 	}
 	public int getVisionWardsBoughtInGame() {

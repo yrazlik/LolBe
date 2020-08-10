@@ -5,12 +5,13 @@ import org.apache.log4j.Logger;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.yrazlik.lol.response.BaseResponse;
 import com.yrazlik.lol.response.GenericErrorResponse;
 
 @ControllerAdvice
-public class LolExceptionHandler {
+public class LolExceptionHandler extends ResponseEntityExceptionHandler {
 
 	private static final Logger LOGGER = Logger.getLogger(LolExceptionHandler.class);
 	

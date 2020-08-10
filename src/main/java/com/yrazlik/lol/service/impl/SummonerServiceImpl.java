@@ -6,18 +6,28 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
 import com.yrazlik.lol.httpclient.LolHttpClient;
 import com.yrazlik.lol.pojo.ChampionDto;
 import com.yrazlik.lol.pojo.CurrentGameParticipantDto;
+import com.yrazlik.lol.pojo.MatchListDto;
 import com.yrazlik.lol.request.RequestGetActiveGame;
+import com.yrazlik.lol.request.RequestGetMatchListByAccountId;
 import com.yrazlik.lol.request.RequestGetSummonerByName;
+import com.yrazlik.lol.request.RequestGetSummonerLeague;
+import com.yrazlik.lol.request.RequestSearchSummonerByName;
 import com.yrazlik.lol.response.AllChampionsResponse;
 import com.yrazlik.lol.response.GetActiveGameInfoResponse;
 import com.yrazlik.lol.response.GetSummonerByNameResponse;
+import com.yrazlik.lol.response.RiotApiResponse;
+import com.yrazlik.lol.response.SearchSummonerByNameResponse;
+import com.yrazlik.lol.response.SummonerLeagueInfoResponse;
 import com.yrazlik.lol.service.DataDragonService;
+import com.yrazlik.lol.service.LeagueService;
+import com.yrazlik.lol.service.MatchService;
 import com.yrazlik.lol.service.SummonerService;
 import com.yrazlik.lol.util.ServicePaths;
 import com.yrazlik.lol.util.UrlUtil;
@@ -31,12 +41,23 @@ public class SummonerServiceImpl implements SummonerService {
 	@Autowired
 	private DataDragonService dataDragonService;
 	
+	@Autowired
+	private LeagueService leagueService;
+	
+	@Autowired
+	private MatchService matchService;
+	
+	@Cacheable(value = "summonerByName", key="{#request?.language, #request?.region, #request?.summonerName}", unless="#result == null")
 	@SuppressWarnings("deprecation")
 	@Override
 	public GetSummonerByNameResponse findSummonerByName(RequestGetSummonerByName request) {
 		String url = UrlUtil.buildSummonerSearchUrl(request.getRegion(), URLEncoder.encode(request.getSummonerName()));
-		String responseStr = lolHttpClient.makeGetRequest(url);
-		GetSummonerByNameResponse response =  new Gson().fromJson(responseStr, GetSummonerByNameResponse.class);
+		RiotApiResponse riotApiResponse = lolHttpClient.makeGetRequest(url);
+		String responseBody = riotApiResponse.getBody();
+		GetSummonerByNameResponse response =  new Gson().fromJson(responseBody, GetSummonerByNameResponse.class);
+		if(response.getId() == null || response.getId().equals("")) {
+			return null;
+		}
 		return response;
 	}
 	
@@ -58,8 +79,9 @@ public class SummonerServiceImpl implements SummonerService {
 			}
 			
 			String url = UrlUtil.buildActiveGameInfoUrl(request.getRegion(), resp.getId());
-			String responseStr = lolHttpClient.makeGetRequest(url);
-			response =  new Gson().fromJson(responseStr, GetActiveGameInfoResponse.class);
+			RiotApiResponse riotApiResponse = lolHttpClient.makeGetRequest(url);
+			String responseBody = riotApiResponse.getBody();
+			response =  new Gson().fromJson(responseBody, GetActiveGameInfoResponse.class);
 			if(response != null && response.getParticipants() != null) {
 				for(CurrentGameParticipantDto participant : response.getParticipants()) {
 					String summonerIconUrl = ServicePaths.PROFILE_ICON_BASE_URL + participant.getProfileIconId() + ".png";
@@ -76,6 +98,27 @@ public class SummonerServiceImpl implements SummonerService {
 			
 		}
 
+		return response;
+	}
+
+	@Override
+	public SearchSummonerByNameResponse searchSummonerByName(RequestSearchSummonerByName requestModel) {
+		RequestGetSummonerByName requestSummoner = new RequestGetSummonerByName(requestModel.getLanguage(), requestModel.getRegion(), requestModel.getSummonerName());
+		GetSummonerByNameResponse respSummoner = findSummonerByName(requestSummoner);
+		String summonerId = respSummoner.getId();
+		String accountId = respSummoner.getAccountId();
+		RequestGetMatchListByAccountId requestMatchList = new RequestGetMatchListByAccountId(requestModel.getLanguage(), requestModel.getRegion(), accountId);
+		MatchListDto matchList = matchService.getMatchListByAccountId(requestMatchList);
+		
+		RequestGetSummonerLeague requestLeague = new RequestGetSummonerLeague(requestModel.getLanguage(), requestModel.getRegion(), summonerId);
+		SummonerLeagueInfoResponse respLeague = leagueService.getSummonerLeagueInfo(requestLeague);
+		
+		//leagueService.get
+		
+		SearchSummonerByNameResponse response = new SearchSummonerByNameResponse();
+		response.setLeagueInfo(respLeague);
+		response.setMatchList(matchList);
+		response.setSummonerInfo(respSummoner);
 		return response;
 	}
 

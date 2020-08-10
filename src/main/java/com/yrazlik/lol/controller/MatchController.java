@@ -25,7 +25,7 @@ public class MatchController {
 	@Autowired
 	private MatchService matchService;
 	
-	@RequestMapping(method = RequestMethod.GET, value = "/matchlists/by-account/{region}/{accountId}.json\"")
+	@RequestMapping(method = RequestMethod.GET, value = "/matchlists/by-account/{region}/{accountId}.json")
 	public BaseResponse<MatchListDto> getMatchListByAccountId(HttpServletRequest request, @PathVariable String accountId, @PathVariable String region) throws JsonSyntaxException, IOException {
 		String language = request.getHeader(PlatformConstants.HEADER_LANGUAGE);
 		region = Utils.getRegion(request, region);
@@ -34,7 +34,7 @@ public class MatchController {
 		return new BaseResponse<MatchListDto>(response);
 	}
 	
-	@RequestMapping(method = RequestMethod.GET, value = "/{matchId}.json\"")
+	@RequestMapping(method = RequestMethod.GET, value = "/{region}/{matchId}.json")
 	public BaseResponse<MatchDto> getMatchDetail(HttpServletRequest request, @PathVariable long matchId, @PathVariable String region) throws JsonSyntaxException, IOException {
 		String language = request.getHeader(PlatformConstants.HEADER_LANGUAGE);
 		region = Utils.getRegion(request, region);

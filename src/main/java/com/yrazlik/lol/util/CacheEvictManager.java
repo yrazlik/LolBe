@@ -54,4 +54,10 @@ public class CacheEvictManager {
 	public void evictAllItemsCache() {
 		LOGGER.error("Evicting allItems cache.");
 	}
+	
+	@CacheEvict(allEntries = true, cacheNames = { "summonerByName" })
+	@Scheduled(fixedDelay = 900000)
+	public void evictSummonerByNameCache() {
+		LOGGER.error("Evicting summonerByName cache.");
+	}
 }

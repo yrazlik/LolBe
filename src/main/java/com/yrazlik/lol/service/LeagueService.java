@@ -5,9 +5,10 @@ import com.yrazlik.lol.pojo.LeagueListDto;
 import com.yrazlik.lol.request.RequestGetLeagueInfo;
 import com.yrazlik.lol.request.RequestGetLeagueInfoByLeagueId;
 import com.yrazlik.lol.request.RequestGetSummonerLeague;
+import com.yrazlik.lol.response.SummonerLeagueInfoResponse;
 
 public interface LeagueService {
-	public LeagueEntryDto getSummonerLeagueInfo(RequestGetSummonerLeague request);
+	public SummonerLeagueInfoResponse getSummonerLeagueInfo(RequestGetSummonerLeague request);
 
 	public LeagueEntryDto getLeagueInfo(RequestGetLeagueInfo requestModel);
 	
