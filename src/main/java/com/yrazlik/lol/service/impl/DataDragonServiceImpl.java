@@ -3,6 +3,7 @@ package com.yrazlik.lol.service.impl;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -18,8 +19,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.yrazlik.lol.httpclient.LolHttpClient;
 import com.yrazlik.lol.pojo.AllItemsDto;
+import com.yrazlik.lol.pojo.AllSpellsDto;
 import com.yrazlik.lol.pojo.BlockDto;
 import com.yrazlik.lol.pojo.BlockItemDto;
 import com.yrazlik.lol.pojo.ChampionDetailResponse;
@@ -29,7 +32,9 @@ import com.yrazlik.lol.pojo.ChampionRpIpDto;
 import com.yrazlik.lol.pojo.ChampionRpIpResponse;
 import com.yrazlik.lol.pojo.ImageDto;
 import com.yrazlik.lol.pojo.ItemDto;
+import com.yrazlik.lol.pojo.LeagueEntryDto;
 import com.yrazlik.lol.pojo.PassiveDto;
+import com.yrazlik.lol.pojo.QueueDto;
 import com.yrazlik.lol.pojo.RecommendedDto;
 import com.yrazlik.lol.pojo.SkinDto;
 import com.yrazlik.lol.pojo.SpellDto;
@@ -38,6 +43,7 @@ import com.yrazlik.lol.request.ChampionDetailRequest;
 import com.yrazlik.lol.request.ChampionImageRequest;
 import com.yrazlik.lol.response.AllChampionsResponse;
 import com.yrazlik.lol.response.AllItemsResponse;
+import com.yrazlik.lol.response.AllSpellsResponse;
 import com.yrazlik.lol.response.RiotApiResponse;
 import com.yrazlik.lol.service.DataDragonService;
 import com.yrazlik.lol.util.DateUtils;
@@ -328,6 +334,93 @@ public class DataDragonServiceImpl implements DataDragonService {
 			return null;
 		}
 		return response;
+	}
+	
+	@Cacheable(value = "allSpells", key="#locale", unless="#result == null")
+	@Override
+	public AllSpellsResponse getAllSpells(String locale) {
+		String url = UrlUtil.buildDataDragonSpellsUrl(locale);
+		RiotApiResponse riotApiResponse = lolHttpClient.makeGetRequest(url);
+		String responseBody = riotApiResponse.getBody();
+		AllSpellsDto AllSpellsDto =  new Gson().fromJson(responseBody, AllSpellsDto.class);
+		Map<String, SpellDto> dto = AllSpellsDto.getData();
+
+		List<SpellDto> spells = new ArrayList<>();
+		for (Map.Entry<String, SpellDto> entry : dto.entrySet()) {
+			SpellDto spell = entry.getValue();
+			if(spell != null) {
+				String key = entry.getKey();
+				spell.setId(key);
+				ImageDto image = spell.getImage();
+				if(image != null && image.getFull() != null) {
+					image.setFull(ServicePaths.CHAMPION_SPELL_IMAGE_BASE_URL + image.getFull());
+				}
+				spells.add(spell);
+			}
+		}
+		AllSpellsResponse response = new AllSpellsResponse();
+		response.setSpells(spells);
+		if(spells == null || spells.size() == 0) {
+			return null;
+		}
+		return response;
+	}
+	
+	@Cacheable(value = "queuesMap", key="#locale", unless="#result == null")
+	@Override
+	public Map<Integer, QueueDto> getQueueTypes(String locale) {
+		String url = UrlUtil.buildDataDragonQueueUrl();
+		RiotApiResponse riotApiResponse = lolHttpClient.makeGetRequest(url);
+		String responseBody = riotApiResponse.getBody();
+		Type listType = new TypeToken<List<QueueDto>>() {}.getType();
+		List<QueueDto> queues =  new Gson().fromJson(responseBody, listType);
+		
+		Map<Integer, QueueDto> queuesMap = null;
+		if(queues != null) {
+			queuesMap = new HashMap<>();
+			for(QueueDto dto : queues) {
+				if(locale != null && locale.contains("tr")) {
+					String map = dto.getMap() == null ? "" : dto.getMap().toLowerCase();
+					String description = dto.getDescription() == null ? "" : dto.getDescription().toLowerCase();
+					if(map.contains("custom")) {
+						dto.setDescription("Özel Oyun");
+					} else if(description.contains("normal")) {
+						dto.setDescription("Normal");
+					} else if(description.contains("dominion")) {
+						dto.setDescription("Dominion");
+					} else if(description.contains("aram")) {
+						dto.setDescription("Sonsuz Uçurum");
+					} else if(description.contains("doom")) {
+						dto.setDescription("Ölümcül Felaket Botları");
+					} else if(description.contains("bot")) {
+						dto.setDescription("Yapay Zekaya Karşı");
+					} else if(description.contains("one for all")) {
+						dto.setDescription("Birimiz Hepimiz İçin");
+					} else if(description.contains("6v6") || description.contains("hexa")) {
+						dto.setDescription("6 vs. 6");
+					} else if(description.contains("urf") || description.contains("rapid")) {
+						dto.setDescription("Ultra Rekabet Faktörü");
+					} else if(description.contains("ascension")) {
+						dto.setDescription("Yükseliş");
+					} else if(description.contains("poro")) {
+						dto.setDescription("Poro Kralı");
+					} else if(description.contains("ranked")) {
+						dto.setDescription("Dereceli Oyun");
+					} else if(description.contains("tutorial")) {
+						dto.setDescription("Eğitim");
+					} 
+				}
+				
+				if(dto.getMap() == null) {
+					dto.setDescription("Custom");
+				}
+				
+				
+				queuesMap.put(dto.getQueueId(), dto);
+			}
+		}
+		
+		return queuesMap;
 	}
 	
 }

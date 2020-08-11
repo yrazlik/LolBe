@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.google.gson.JsonSyntaxException;
 import com.yrazlik.lol.pojo.MatchDto;
@@ -26,10 +27,10 @@ public class MatchController {
 	private MatchService matchService;
 	
 	@RequestMapping(method = RequestMethod.GET, value = "/matchlists/by-account/{region}/{accountId}.json")
-	public BaseResponse<MatchListDto> getMatchListByAccountId(HttpServletRequest request, @PathVariable String accountId, @PathVariable String region) throws JsonSyntaxException, IOException {
+	public BaseResponse<MatchListDto> getMatchListByAccountId(HttpServletRequest request, @PathVariable String accountId, @PathVariable String region, @RequestParam("startIndex") int startIndex, @RequestParam("startIndex") int endIndex) throws JsonSyntaxException, IOException {
 		String language = request.getHeader(PlatformConstants.HEADER_LANGUAGE);
 		region = Utils.getRegion(request, region);
-		RequestGetMatchListByAccountId requestModel = new RequestGetMatchListByAccountId(language, region, accountId);
+		RequestGetMatchListByAccountId requestModel = new RequestGetMatchListByAccountId(language, region, accountId, startIndex, endIndex);
 		MatchListDto response = matchService.getMatchListByAccountId(requestModel);
 		return new BaseResponse<MatchListDto>(response);
 	}

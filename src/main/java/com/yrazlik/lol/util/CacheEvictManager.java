@@ -55,6 +55,18 @@ public class CacheEvictManager {
 		LOGGER.error("Evicting allItems cache.");
 	}
 	
+	@CacheEvict(allEntries = true, cacheNames = { "allSpells" })
+	@Scheduled(fixedDelay = 10800000)
+	public void evictAllSpellsCache() {
+		LOGGER.error("Evicting allSpells cache.");
+	}
+	
+	@CacheEvict(allEntries = true, cacheNames = { "queuesMap" })
+	@Scheduled(fixedDelay = 10800000)
+	public void evictQueuesMapCache() {
+		LOGGER.error("Evicting queuesMap cache.");
+	}
+	
 	@CacheEvict(allEntries = true, cacheNames = { "summonerByName" })
 	@Scheduled(fixedDelay = 900000)
 	public void evictSummonerByNameCache() {

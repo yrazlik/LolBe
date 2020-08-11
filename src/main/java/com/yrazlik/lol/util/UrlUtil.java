@@ -12,6 +12,16 @@ public class UrlUtil {
 		return baseUrl + "/" + version + basePath + locale + path;
 	}
 	
+	public static String buildDataDragonQueueUrl() {
+		return "https://static.developer.riotgames.com/docs/lol/queues.json";
+	}
+	
+	
+	
+	public static String buildDataDragonSpellsUrl(String locale) {
+		return "https://ddragon.leagueoflegends.com/cdn/" + ServicePaths.LATEST_VERSION + "/data/" + locale + "/summoner.json";
+	}
+	
 	public static String buildDataDragonItemsUrl(String baseUrl, String locale) {
 		return baseUrl + locale + "/item.json";
 	}
@@ -41,9 +51,9 @@ public class UrlUtil {
 		return PROTOCOL + region.getRegionCode() + "." + API_BASE_PATH  + "/lol/league" + API_VERSION + "/leagues/" + leagueId;
 	}
 
-	public static String buildMatchListByAccountIdUrl(String regionCode, String accountId) {
+	public static String buildMatchListByAccountIdUrl(String regionCode, String accountId, int startIndex, int endIndex) {
 		Region region = Region.createRegionFromRegionCode(regionCode);
-		return PROTOCOL + region.getRegionCode() + "." + API_BASE_PATH  + "/lol/match" + API_VERSION + "/matchlists/by-account/" + accountId;
+		return PROTOCOL + region.getRegionCode() + "." + API_BASE_PATH  + "/lol/match" + API_VERSION + "/matchlists/by-account/" + accountId + "?startIndex=" + startIndex + "&endIndex=" + endIndex;
 	}
 
 	public static String buildMatchDetailUrl(String regionCode, long matchId) {

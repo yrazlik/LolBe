@@ -8,8 +8,10 @@ public class MatchReferenceDto {
 	private String platformId;
 	private int champion;
 	private int queue;
+	private String queueName;
 	private String lane;
 	private long timestamp;
+	private MatchDto matchDto;
 	public long getGameId() {
 		return gameId;
 	}
@@ -57,6 +59,18 @@ public class MatchReferenceDto {
 	}
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
+	}
+	public MatchDto getMatchDto() {
+		return matchDto;
+	}
+	public void setMatchDto(MatchDto matchDto) {
+		this.matchDto = matchDto;
+	}
+	public String getQueueName() {
+		return queueName;
+	}
+	public void setQueueName(String queueName) {
+		this.queueName = queueName;
 	}
 	
 	

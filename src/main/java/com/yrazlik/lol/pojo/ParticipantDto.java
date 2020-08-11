@@ -6,12 +6,15 @@ public class ParticipantDto {
 
 	private int participantId;
 	private int championId;
+	private String championImageUrl;
 	private List<RuneDto> runes;
 	private ParticipantStatsDto stats;
 	private int teamId;
 	private ParticipantTimelineDto timeline;
 	private int spell1Id;
 	private int spell2Id;
+	private String spell1Url;
+	private String spell2Url;
 	private int highestAchievedSeasonTier;
 	private List<MasteryDto> masteries;
 	public int getParticipantId() {
@@ -73,6 +76,24 @@ public class ParticipantDto {
 	}
 	public void setMasteries(List<MasteryDto> masteries) {
 		this.masteries = masteries;
+	}
+	public String getChampionImageUrl() {
+		return championImageUrl;
+	}
+	public void setChampionImageUrl(String championImageUrl) {
+		this.championImageUrl = championImageUrl;
+	}
+	public String getSpell1Url() {
+		return spell1Url;
+	}
+	public void setSpell1Url(String spell1Url) {
+		this.spell1Url = spell1Url;
+	}
+	public String getSpell2Url() {
+		return spell2Url;
+	}
+	public void setSpell2Url(String spell2Url) {
+		this.spell2Url = spell2Url;
 	}
 	
 	

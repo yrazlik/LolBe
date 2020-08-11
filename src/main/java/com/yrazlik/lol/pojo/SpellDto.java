@@ -14,6 +14,7 @@ public class SpellDto {
 	private String cooldownBurn;
 	private List<Double> cost;
 	private String costBurn;
+	private String key;
 	//datavalues: { },
 	//effect: [],
 	//effectBurn: [],
@@ -126,6 +127,12 @@ public class SpellDto {
 	}
 	public void setVideoUrl(String videoUrl) {
 		this.videoUrl = videoUrl;
+	}
+	public String getKey() {
+		return key;
+	}
+	public void setKey(String key) {
+		this.key = key;
 	}
 	
 	

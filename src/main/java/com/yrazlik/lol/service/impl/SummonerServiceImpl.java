@@ -116,7 +116,7 @@ public class SummonerServiceImpl implements SummonerService {
 		GetSummonerByNameResponse respSummoner = self.findSummonerByName(requestSummoner);
 		String summonerId = respSummoner.getId();
 		String accountId = respSummoner.getAccountId();
-		RequestGetMatchListByAccountId requestMatchList = new RequestGetMatchListByAccountId(requestModel.getLanguage(), requestModel.getRegion(), accountId);
+		RequestGetMatchListByAccountId requestMatchList = new RequestGetMatchListByAccountId(requestModel.getLanguage(), requestModel.getRegion(), accountId, 0, 10);
 		MatchListDto matchList = matchService.getMatchListByAccountId(requestMatchList);
 		
 		RequestGetSummonerLeague requestLeague = new RequestGetSummonerLeague(requestModel.getLanguage(), requestModel.getRegion(), summonerId);

@@ -8,6 +8,8 @@ public class MatchListDto {
 	private int totalGames;
 	private int endIndex;
 	private List<MatchReferenceDto> matches;
+	private boolean end = true;
+	
 	public int getStartIndex() {
 		return startIndex;
 	}
@@ -31,6 +33,12 @@ public class MatchListDto {
 	}
 	public void setMatches(List<MatchReferenceDto> matches) {
 		this.matches = matches;
+	}
+	public boolean isEnd() {
+		return end;
+	}
+	public void setEnd(boolean end) {
+		this.end = end;
 	}
 	
 	
