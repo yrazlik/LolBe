@@ -16,10 +16,13 @@ import com.yrazlik.lol.httpclient.LolHttpClient;
 import com.yrazlik.lol.pojo.ChampionDto;
 import com.yrazlik.lol.pojo.CurrentGameParticipantDto;
 import com.yrazlik.lol.pojo.LeagueEntryDto;
+import com.yrazlik.lol.pojo.LeagueItemDto;
+import com.yrazlik.lol.pojo.LeagueListDto;
 import com.yrazlik.lol.pojo.MatchListDto;
 import com.yrazlik.lol.pojo.ChampionMasteryDTO;
 import com.yrazlik.lol.request.RequestChampionMasteries;
 import com.yrazlik.lol.request.RequestGetActiveGame;
+import com.yrazlik.lol.request.RequestGetLeagueInfoByLeagueId;
 import com.yrazlik.lol.request.RequestGetMatchListByAccountId;
 import com.yrazlik.lol.request.RequestGetSummonerByName;
 import com.yrazlik.lol.request.RequestGetSummonerLeague;
@@ -121,6 +124,18 @@ public class SummonerServiceImpl implements SummonerService {
 		
 		RequestGetSummonerLeague requestLeague = new RequestGetSummonerLeague(requestModel.getLanguage(), requestModel.getRegion(), summonerId);
 		SummonerLeagueInfoResponse respLeague = leagueService.getSummonerLeagueInfo(requestLeague);
+		if(respLeague != null && respLeague.getLeagues() != null) {
+			List<LeagueEntryDto> leagues = respLeague.getLeagues();
+			for(LeagueEntryDto league : leagues) {
+				RequestGetLeagueInfoByLeagueId reqLeagueDetail = new RequestGetLeagueInfoByLeagueId(requestModel.getLanguage(), requestModel.getRegion(), league.getLeagueId());
+				LeagueListDto response = leagueService.getLeagueInfoByLeagueId(reqLeagueDetail);
+				if(response != null) {
+					league.setLeagueName(response.getName());
+					List<LeagueItemDto> entries = response.getEntries();
+					league.setEntries(entries);
+				}
+			}
+		}
 		
 		RequestChampionMasteries requestMasteries = new RequestChampionMasteries(requestModel.getLanguage(), requestModel.getRegion(), summonerId);
 		List<ChampionMasteryDTO> respMasteries = self.getSummonerChampionMasteries(requestMasteries);

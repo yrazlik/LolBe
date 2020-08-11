@@ -1,7 +1,10 @@
 package com.yrazlik.lol.pojo;
 
+import java.util.List;
+
 public class LeagueEntryDto {
 
+	private String leagueName;
 	private String leagueId;
 	private String queueType;
 	private String tier;
@@ -15,6 +18,7 @@ public class LeagueEntryDto {
 	private boolean inactive;
 	private boolean freshBlood;
 	private boolean hotStreak;
+	private List<LeagueItemDto> entries;
 	private MiniSeriesDto miniSeries;
 	public String getLeagueId() {
 		return leagueId;
@@ -99,6 +103,18 @@ public class LeagueEntryDto {
 	}
 	public void setMiniSeries(MiniSeriesDto miniSeries) {
 		this.miniSeries = miniSeries;
+	}
+	public String getLeagueName() {
+		return leagueName;
+	}
+	public void setLeagueName(String leagueName) {
+		this.leagueName = leagueName;
+	}
+	public List<LeagueItemDto> getEntries() {
+		return entries;
+	}
+	public void setEntries(List<LeagueItemDto> entries) {
+		this.entries = entries;
 	}
 	
 	
