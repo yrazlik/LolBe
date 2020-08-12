@@ -1,7 +1,7 @@
 package com.yrazlik.lol.response;
 
 public class RiotApiResponse {
-	
+
 	private int statusCode;
 	private String body;
 	
@@ -17,6 +17,4 @@ public class RiotApiResponse {
 	public void setBody(String body) {
 		this.body = body;
 	}
-	
-	
 }
