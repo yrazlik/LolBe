@@ -2,53 +2,63 @@ package com.yrazlik.lol.pojo;
 
 public class SummonerAveragesDto {
 	
-	private double averageKills;
-	private double averageDeaths;
-	private double averageAssits;
-	private double averageMinions;
-	private double winRate;
+	private int averageKills;
+	private int averageDeaths;
+	private int averageAssists;
+	private int averageMinions;
+	private int winRate;
 	
 	public SummonerAveragesDto() {
 		super();
 	}
 	
-	public SummonerAveragesDto(double averageKills, double averageDeaths, double averageAssits, double averageMinions,
-			double winRate) {
+	public SummonerAveragesDto(int averageKills, int averageDeaths, int averageAssists, int averageMinions,
+			int winRate) {
 		super();
 		this.averageKills = averageKills;
 		this.averageDeaths = averageDeaths;
-		this.averageAssits = averageAssits;
+		this.averageAssists = averageAssists;
 		this.averageMinions = averageMinions;
 		this.winRate = winRate;
 	}
-	public double getAverageKills() {
+
+	public int getAverageKills() {
 		return averageKills;
 	}
-	public void setAverageKills(double averageKills) {
+
+	public void setAverageKills(int averageKills) {
 		this.averageKills = averageKills;
 	}
-	public double getAverageDeaths() {
+
+	public int getAverageDeaths() {
 		return averageDeaths;
 	}
-	public void setAverageDeaths(double averageDeaths) {
+
+	public void setAverageDeaths(int averageDeaths) {
 		this.averageDeaths = averageDeaths;
 	}
-	public double getAverageAssits() {
-		return averageAssits;
+
+	public int getAverageAssists() {
+		return averageAssists;
 	}
-	public void setAverageAssits(double averageAssits) {
-		this.averageAssits = averageAssits;
+
+	public void setAverageAssists(int averageAssists) {
+		this.averageAssists = averageAssists;
 	}
-	public double getAverageMinions() {
+
+	public int getAverageMinions() {
 		return averageMinions;
 	}
-	public void setAverageMinions(double averageMinions) {
+
+	public void setAverageMinions(int averageMinions) {
 		this.averageMinions = averageMinions;
 	}
-	public double getWinRate() {
+
+	public int getWinRate() {
 		return winRate;
 	}
-	public void setWinRate(double winRate) {
+
+	public void setWinRate(int winRate) {
 		this.winRate = winRate;
 	}
 	

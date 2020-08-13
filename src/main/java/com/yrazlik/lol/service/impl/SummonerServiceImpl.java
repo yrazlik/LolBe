@@ -39,6 +39,7 @@ import com.yrazlik.lol.pojo.SingleParticipantMatchDto;
 import com.yrazlik.lol.pojo.SingleParticipantMatchListDto;
 import com.yrazlik.lol.pojo.SingleParticipantMatchReferenceDto;
 import com.yrazlik.lol.pojo.SpellDto;
+import com.yrazlik.lol.pojo.SummonerAveragesDto;
 import com.yrazlik.lol.request.RequestChampionMasteries;
 import com.yrazlik.lol.request.RequestGetActiveGame;
 import com.yrazlik.lol.request.RequestGetLeagueInfoByLeagueId;
@@ -141,7 +142,8 @@ public class SummonerServiceImpl implements SummonerService {
 		RequestGetSummonerByName requestSummoner = new RequestGetSummonerByName(requestModel.getLanguage(), requestModel.getRegion(), requestModel.getSummonerName());
 		GetSummonerByNameResponse respSummoner = self.findSummonerByName(requestSummoner);
 		String summonerId = respSummoner.getId();
-		
+        int totalWin = 0, totalKills = 0, totalDeaths = 0, totalMinionsKilled = 0, totatlAssists = 0, totalMatches = 0;
+
 		if(summonerId != null && summonerId.length() > 0) {
 			String accountId = respSummoner.getAccountId();
 			RequestGetMatchListByAccountId requestMatchList = new RequestGetMatchListByAccountId(requestModel.getLanguage(), requestModel.getRegion(), accountId, 0, 10);
@@ -258,7 +260,15 @@ public class SummonerServiceImpl implements SummonerService {
 												stats.setItem6ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem6() + ".png");
 											}
 											currentParticipantDto = participant;
-											break;
+											
+                                             totalKills += stats.getKills();
+                                             totalDeaths += stats.getDeaths();
+                                             totatlAssists += stats.getAssists();
+                                             totalMinionsKilled += stats.getTotalMinionsKilled();
+                                             totalMatches++;
+                                             if(stats.isWin()) {
+                                                 totalWin++;
+                                             } 
 										}
 									}
 								}
@@ -309,6 +319,23 @@ public class SummonerServiceImpl implements SummonerService {
 			SearchSummonerByNameResponse response = new SearchSummonerByNameResponse();
 			response.setLeagueInfo(respLeague);
 			response.setMatchList(singleParticipantMatchListDto);
+			
+			SummonerAveragesDto averages = new SummonerAveragesDto();
+			if(totalMatches != 0) {
+                int averageKills = (int) Math.round((double) totalKills / (double) (totalMatches));
+                int averageDeaths = (int) Math.round((double) totalDeaths / (double) (totalMatches));
+                int averageAssists = (int) Math.round((double) totatlAssists / (double) (totalMatches));
+                int averageMinionsKilled = (int) Math.round((double) totalMinionsKilled / (double) totalMatches);
+                int averageWinRate = (int) ((double) totalWin / (double) (totalMatches) * 100);
+                
+                averages.setAverageKills(averageKills);
+                averages.setAverageDeaths(averageDeaths);
+                averages.setAverageAssists(averageAssists);;
+                averages.setAverageMinions(averageMinionsKilled);
+                averages.setWinRate(averageWinRate);
+            }
+			response.setAverages(averages);
+			
 			response.setSummonerInfo(respSummoner);
 			response.setMasteries(respMasteries);
 			return response;
