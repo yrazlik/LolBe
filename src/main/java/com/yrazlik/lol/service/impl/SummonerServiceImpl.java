@@ -2,24 +2,43 @@ package com.yrazlik.lol.service.impl;
 
 import java.lang.reflect.Type;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.yrazlik.lol.callable.MatchDetailExecutorTask;
 import com.yrazlik.lol.httpclient.LolHttpClient;
 import com.yrazlik.lol.pojo.ChampionDto;
+import com.yrazlik.lol.pojo.ChampionMasteryDTO;
 import com.yrazlik.lol.pojo.CurrentGameParticipantDto;
+import com.yrazlik.lol.pojo.ImageDto;
 import com.yrazlik.lol.pojo.LeagueEntryDto;
 import com.yrazlik.lol.pojo.LeagueItemDto;
 import com.yrazlik.lol.pojo.LeagueListDto;
+import com.yrazlik.lol.pojo.MatchDto;
 import com.yrazlik.lol.pojo.MatchListDto;
-import com.yrazlik.lol.pojo.ChampionMasteryDTO;
+import com.yrazlik.lol.pojo.MatchReferenceDto;
+import com.yrazlik.lol.pojo.ParticipantDto;
+import com.yrazlik.lol.pojo.ParticipantIdentityDto;
+import com.yrazlik.lol.pojo.ParticipantStatsDto;
+import com.yrazlik.lol.pojo.QueueDto;
+import com.yrazlik.lol.pojo.RequestGetMatchDetail;
+import com.yrazlik.lol.pojo.SingleParticipantMatchDto;
+import com.yrazlik.lol.pojo.SingleParticipantMatchListDto;
+import com.yrazlik.lol.pojo.SingleParticipantMatchReferenceDto;
+import com.yrazlik.lol.pojo.SpellDto;
 import com.yrazlik.lol.request.RequestChampionMasteries;
 import com.yrazlik.lol.request.RequestGetActiveGame;
 import com.yrazlik.lol.request.RequestGetLeagueInfoByLeagueId;
@@ -28,6 +47,7 @@ import com.yrazlik.lol.request.RequestGetSummonerByName;
 import com.yrazlik.lol.request.RequestGetSummonerLeague;
 import com.yrazlik.lol.request.RequestSearchSummonerByName;
 import com.yrazlik.lol.response.AllChampionsResponse;
+import com.yrazlik.lol.response.AllSpellsResponse;
 import com.yrazlik.lol.response.GetActiveGameInfoResponse;
 import com.yrazlik.lol.response.GetSummonerByNameResponse;
 import com.yrazlik.lol.response.RiotApiResponse;
@@ -57,6 +77,9 @@ public class SummonerServiceImpl implements SummonerService {
 	
 	@Autowired
 	private SummonerService self;
+	
+	@Autowired
+	private ThreadPoolTaskExecutor threadPoolExecutor;
 	
 	@Cacheable(value = "summonerByName", key="{#request?.language, #request?.region, #request?.summonerName}", unless="#result == null")
 	@SuppressWarnings("deprecation")
@@ -118,35 +141,180 @@ public class SummonerServiceImpl implements SummonerService {
 		RequestGetSummonerByName requestSummoner = new RequestGetSummonerByName(requestModel.getLanguage(), requestModel.getRegion(), requestModel.getSummonerName());
 		GetSummonerByNameResponse respSummoner = self.findSummonerByName(requestSummoner);
 		String summonerId = respSummoner.getId();
-		String accountId = respSummoner.getAccountId();
-		RequestGetMatchListByAccountId requestMatchList = new RequestGetMatchListByAccountId(requestModel.getLanguage(), requestModel.getRegion(), accountId, 0, 10);
-		MatchListDto matchList = matchService.getMatchListByAccountId(requestMatchList);
 		
-		RequestGetSummonerLeague requestLeague = new RequestGetSummonerLeague(requestModel.getLanguage(), requestModel.getRegion(), summonerId);
-		SummonerLeagueInfoResponse respLeague = leagueService.getSummonerLeagueInfo(requestLeague);
-		if(respLeague != null && respLeague.getLeagues() != null) {
-			List<LeagueEntryDto> leagues = respLeague.getLeagues();
-			for(LeagueEntryDto league : leagues) {
-				RequestGetLeagueInfoByLeagueId reqLeagueDetail = new RequestGetLeagueInfoByLeagueId(requestModel.getLanguage(), requestModel.getRegion(), league.getLeagueId());
-				LeagueListDto response = leagueService.getLeagueInfoByLeagueId(reqLeagueDetail);
-				if(response != null) {
-					league.setLeagueName(response.getName());
-					List<LeagueItemDto> entries = response.getEntries();
-					league.setEntries(entries);
+		if(summonerId != null && summonerId.length() > 0) {
+			String accountId = respSummoner.getAccountId();
+			RequestGetMatchListByAccountId requestMatchList = new RequestGetMatchListByAccountId(requestModel.getLanguage(), requestModel.getRegion(), accountId, 0, 10);
+			MatchListDto matchListResponse = matchService.getMatchListByAccountId(requestMatchList);
+			SingleParticipantMatchListDto singleParticipantMatchListDto = new SingleParticipantMatchListDto(matchListResponse.getStartIndex(), matchListResponse.getTotalGames(), matchListResponse.getEndIndex(), null, matchListResponse.isEnd());
+
+			if(matchListResponse != null) {
+				List<MatchReferenceDto> matches = matchListResponse.getMatches();
+				if(matches != null && matches.size() > 0) {
+					matchListResponse.setEnd(false);
+					
+					Map<Long, ChampionDto> championsMap = dataDragonService.getAllChampionsMap(requestModel.getLanguage());
+					Map<Integer, SpellDto> spellsMap = dataDragonService.getAllSpellsMap(requestModel.getLanguage());
+
+					
+					Map<Integer, QueueDto> queueTypes = dataDragonService.getQueueTypes(requestModel.getLanguage());
+					
+					List<MatchDetailExecutorTask> taskList = new ArrayList<>();
+					
+					for(MatchReferenceDto match : matches) {
+						RequestGetMatchDetail reqMatchDetail = new RequestGetMatchDetail(requestModel.getLanguage(), requestModel.getRegion(), match.getGameId());
+						taskList.add(new MatchDetailExecutorTask(reqMatchDetail));
+					}
+					
+					Map<Long, MatchDto> matchList = new HashMap<>();
+					try {
+						List<Future<MatchDto>> matchFutures = threadPoolExecutor.getThreadPoolExecutor().invokeAll(taskList, 10000, TimeUnit.MILLISECONDS);
+						if(matchFutures != null) {
+							for(Future<MatchDto> future : matchFutures) {
+								try {
+									MatchDto match = future.get(70000, TimeUnit.MILLISECONDS);
+									if(match != null && match.getGameId() != 0) {
+										matchList.put(match.getGameId(), match);
+									}
+								} catch (ExecutionException e) {
+									e.printStackTrace();
+								} catch (TimeoutException e) {
+									e.printStackTrace();
+								}
+							}
+						}
+					} catch (IllegalStateException e) {
+						e.printStackTrace();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					
+					//List<MatchReferenceDto> matchesWithMatchDetail = new ArrayList<>();
+					List<SingleParticipantMatchReferenceDto> matchesWithMatchDetail = new ArrayList<>();
+
+					
+					for(MatchReferenceDto match : matches) {
+						ParticipantIdentityDto currentParticipantIdentity = null;
+						ParticipantDto currentParticipantDto = null;
+						
+						
+						long gameId = match.getGameId();
+						if(matchList.containsKey(gameId)) {
+							MatchDto matchDto = matchList.get(gameId);
+							
+							
+							if(matchDto != null) {
+								
+								if(queueTypes != null && queueTypes.containsKey(match.getQueue())) {
+									QueueDto queue = queueTypes.get(match.getQueue());
+									match.setQueueName(queue == null || queue.getDescription() == null ? "-" : queue.getDescription());
+								}
+							
+								List<ParticipantDto> participants = matchDto.getParticipants();
+								
+								List<ParticipantIdentityDto> participantIdentities = matchDto.getParticipantIdentities();
+								for(ParticipantIdentityDto participantIdentityDto : participantIdentities) {
+									if(participantIdentityDto.getPlayer() != null && summonerId.equalsIgnoreCase(participantIdentityDto.getPlayer().getSummonerId())) {
+										currentParticipantIdentity = participantIdentityDto;
+										break;
+									}
+								}
+								
+								
+								if(participants != null) {
+									for(ParticipantDto participant : participants) {
+										if(participant != null && (participant.getParticipantId() == currentParticipantIdentity.getParticipantId())) {
+											Long championId = (long) participant.getChampionId();
+											String champNameId = championsMap.containsKey(championId) ? championsMap.get(championId).getChampId() : "";
+											participant.setChampionImageUrl(ServicePaths.DATA_DRAGON_CHAMPION_IMG_BASE_PATH + champNameId + ".png");
+											int spell1Id = participant.getSpell1Id(), spell2Id = participant.getSpell2Id();
+											if(spellsMap.containsKey(spell1Id)) {
+												SpellDto spell = spellsMap.get(spell1Id);
+												if(spell != null) {
+													ImageDto img = spell.getImage();
+													if(img != null) {
+														participant.setSpell1Url(img.getFull());
+													}
+												}
+											}
+											
+											if(spellsMap.containsKey(spell2Id)) {
+												SpellDto spell = spellsMap.get(spell2Id);
+												if(spell != null) {
+													ImageDto img = spell.getImage();
+													if(img != null) {
+														participant.setSpell2Url(img.getFull());
+													}
+												}
+											}
+											ParticipantStatsDto stats = participant.getStats();
+											if(stats != null) {
+												stats.setItem0ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem0() + ".png");
+												stats.setItem1ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem1() + ".png");
+												stats.setItem2ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem2() + ".png");
+												stats.setItem3ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem3() + ".png");
+												stats.setItem4ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem4() + ".png");
+												stats.setItem5ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem5() + ".png");
+												stats.setItem6ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem6() + ".png");
+											}
+											currentParticipantDto = participant;
+											break;
+										}
+									}
+								}
+								
+								match.setMatchDto(matchDto);
+								
+								SingleParticipantMatchReferenceDto singleParticipantMatchReferenceDto = new SingleParticipantMatchReferenceDto(match.getGameId(),
+										match.getRole(), match.getSeason(), match.getPlatformId(), match.getChampion(), match.getQueue(), match.getQueueName(), match.getLane(), match.getTimestamp());
+								
+								SingleParticipantMatchDto singleParticipantMatchDto = new SingleParticipantMatchDto(matchDto.getGameId(), matchDto.getQueueId(), matchDto.getGameType(), matchDto.getPlatformId(), matchDto.getGameCreation(), matchDto.getSeasonId(), matchDto.getGameVersion(), matchDto.getMapId(), matchDto.getGameMode());
+								singleParticipantMatchDto.setParticipantIdentitiy(currentParticipantIdentity);;
+								singleParticipantMatchDto.setParticipant(currentParticipantDto);
+								singleParticipantMatchReferenceDto.setMatchDto(singleParticipantMatchDto);
+								matchesWithMatchDetail.add(singleParticipantMatchReferenceDto);
+							}
+							
+						}
+					}
+					
+					singleParticipantMatchListDto.setMatches(matchesWithMatchDetail);
+
+				} else {
+					singleParticipantMatchListDto.setEnd(true);
 				}
 			}
+			
+			
+			
+			RequestGetSummonerLeague requestLeague = new RequestGetSummonerLeague(requestModel.getLanguage(), requestModel.getRegion(), summonerId);
+			SummonerLeagueInfoResponse respLeague = leagueService.getSummonerLeagueInfo(requestLeague);
+			if(respLeague != null && respLeague.getLeagues() != null) {
+				List<LeagueEntryDto> leagues = respLeague.getLeagues();
+				for(LeagueEntryDto league : leagues) {
+					RequestGetLeagueInfoByLeagueId reqLeagueDetail = new RequestGetLeagueInfoByLeagueId(requestModel.getLanguage(), requestModel.getRegion(), league.getLeagueId());
+					LeagueListDto response = leagueService.getLeagueInfoByLeagueId(reqLeagueDetail);
+					if(response != null) {
+						league.setLeagueName(response.getName());
+						List<LeagueItemDto> entries = response.getEntries();
+						league.setEntries(entries);
+					}
+				}
+			}
+			
+			RequestChampionMasteries requestMasteries = new RequestChampionMasteries(requestModel.getLanguage(), requestModel.getRegion(), summonerId);
+			List<ChampionMasteryDTO> respMasteries = self.getSummonerChampionMasteries(requestMasteries);
+			//leagueService.get
+			
+			SearchSummonerByNameResponse response = new SearchSummonerByNameResponse();
+			response.setLeagueInfo(respLeague);
+			response.setMatchList(singleParticipantMatchListDto);
+			response.setSummonerInfo(respSummoner);
+			response.setMasteries(respMasteries);
+			return response;
 		}
 		
-		RequestChampionMasteries requestMasteries = new RequestChampionMasteries(requestModel.getLanguage(), requestModel.getRegion(), summonerId);
-		List<ChampionMasteryDTO> respMasteries = self.getSummonerChampionMasteries(requestMasteries);
-		//leagueService.get
-		
-		SearchSummonerByNameResponse response = new SearchSummonerByNameResponse();
-		response.setLeagueInfo(respLeague);
-		response.setMatchList(matchList);
-		response.setSummonerInfo(respSummoner);
-		response.setMasteries(respMasteries);
-		return response;
+		return null;
 	}
 
 	@Override

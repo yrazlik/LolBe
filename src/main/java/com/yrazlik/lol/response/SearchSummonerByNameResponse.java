@@ -1,6 +1,7 @@
 package com.yrazlik.lol.response;
 
-import com.yrazlik.lol.pojo.MatchListDto;
+import com.yrazlik.lol.pojo.SingleParticipantMatchListDto;
+import com.yrazlik.lol.pojo.SummonerAveragesDto;
 
 import java.util.List;
 
@@ -9,7 +10,8 @@ import com.yrazlik.lol.pojo.ChampionMasteryDTO;
 public class SearchSummonerByNameResponse {
 	
 	private GetSummonerByNameResponse summonerInfo;
-	private MatchListDto matchList;
+	private SummonerAveragesDto averages;
+	private SingleParticipantMatchListDto matchList;
 	private SummonerLeagueInfoResponse leagueInfo;
 	private List<ChampionMasteryDTO> masteries;
 	
@@ -19,10 +21,17 @@ public class SearchSummonerByNameResponse {
 	public void setSummonerInfo(GetSummonerByNameResponse summonerInfo) {
 		this.summonerInfo = summonerInfo;
 	}
-	public MatchListDto getMatchList() {
+	
+	public SummonerAveragesDto getAverages() {
+		return averages;
+	}
+	public void setAverages(SummonerAveragesDto averages) {
+		this.averages = averages;
+	}
+	public SingleParticipantMatchListDto getMatchList() {
 		return matchList;
 	}
-	public void setMatchList(MatchListDto matchList) {
+	public void setMatchList(SingleParticipantMatchListDto matchList) {
 		this.matchList = matchList;
 	}
 	public SummonerLeagueInfoResponse getLeagueInfo() {

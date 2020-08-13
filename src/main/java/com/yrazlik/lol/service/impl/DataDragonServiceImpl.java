@@ -306,6 +306,25 @@ public class DataDragonServiceImpl implements DataDragonService {
 		return response;
 	}
 	
+	@Cacheable(value = "allChampionsMap", key="#locale", unless="#result == null")
+	@Override
+	public Map<Long, ChampionDto> getAllChampionsMap(String locale) {
+		Map<Long, ChampionDto> allChampionsMap = null;
+		AllChampionsResponse allChampionsResponse = self.getAllChampions(locale);
+		if(allChampionsResponse != null) {
+			List<ChampionDto> championList = allChampionsResponse.getChampions();
+			if (championList != null) {
+				allChampionsMap = new HashMap<>();
+				for(ChampionDto champ : championList) {
+					if(champ != null && champ.getId() != 0 && champ.getChampId() != null && champ.getChampId().length() > 0) {
+						allChampionsMap.put(champ.getId(), champ);
+					}
+				}
+			}
+		}
+		return allChampionsMap;
+	}
+	
 	@Cacheable(value = "allItems", key="#locale", unless="#result == null")
 	@Override
 	public AllItemsResponse getAllItems(String locale) {
@@ -364,6 +383,33 @@ public class DataDragonServiceImpl implements DataDragonService {
 			return null;
 		}
 		return response;
+	}
+	
+	@Cacheable(value = "allSpellsMap", key="#locale", unless="#result == null")
+	@Override
+	public Map<Integer, SpellDto> getAllSpellsMap(String locale) {
+		Map<Integer, SpellDto> allSpellsMap = null;
+		AllSpellsResponse allSpellsResponse = self.getAllSpells(locale);
+		
+		if(allSpellsResponse != null) {
+			List<SpellDto> allSpells = allSpellsResponse.getSpells();
+			if(allSpells != null && allSpells.size() > 0) {
+				allSpellsMap = new HashMap<>();
+				for(SpellDto spell : allSpells) {
+					String key = spell.getKey();
+					try {
+						if(spell != null && spell.getId() != null && spell.getId().length() > 0) {
+							int keyInt = Integer.parseInt(key);
+							allSpellsMap.put(keyInt, spell);
+						}
+					} catch (Exception ignored) {
+						// spoiled data is ignored
+					}
+				}
+			}
+		}
+		
+		return allSpellsMap;
 	}
 	
 	@Cacheable(value = "queuesMap", key="#locale", unless="#result == null")

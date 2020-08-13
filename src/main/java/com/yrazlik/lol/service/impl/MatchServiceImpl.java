@@ -45,9 +45,6 @@ public class MatchServiceImpl implements MatchService {
 	
 	@Autowired
 	private DataDragonService dataDragonService;
-	
-	@Autowired
-	private ThreadPoolTaskExecutor threadPoolExecutor;
 
 	@Override
 	public MatchListDto getMatchListByAccountId(RequestGetMatchListByAccountId request) {
@@ -55,6 +52,15 @@ public class MatchServiceImpl implements MatchService {
 		RiotApiResponse riotApiResponse = lolHttpClient.makeGetRequest(url);
 		String responseBody = riotApiResponse.getBody();
 		MatchListDto response =  new Gson().fromJson(responseBody, MatchListDto.class);
+		return response;
+	}
+	
+	/*
+	 * 
+	- String url = UrlUtil.buildMatchListByAccountIdUrl(request.getRegion(), request.getAccountId(), request.getStartIndex(), request.getEndIndex());
+	-	RiotApiResponse riotApiResponse = lolHttpClient.makeGetRequest(url);
+	-	String responseBody = riotApiResponse.getBody();
+	-	MatchListDto response =  new Gson().fromJson(responseBody, MatchListDto.class);
 		if(response != null) {
 			List<MatchReferenceDto> matches = response.getMatches();
 			if(matches != null && matches.size() > 0) {
@@ -191,7 +197,9 @@ public class MatchServiceImpl implements MatchService {
 			}
 		}
 		return response;
-	}
+	 * 
+	 * 
+	 * */
 
 	@Override
 	public MatchDto getMatchDetail(RequestGetMatchDetail request) {

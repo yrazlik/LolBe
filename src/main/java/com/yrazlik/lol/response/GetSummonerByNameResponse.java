@@ -1,12 +1,16 @@
 package com.yrazlik.lol.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class GetSummonerByNameResponse {
 
 	private String id;
 	private String accountId;
+	@JsonIgnore
 	private String puuid;
 	private String name;
 	private long profileIconId;
+	@JsonIgnore
 	private long revisionDate;
 	private int summonerLevel;
 	private String profileIconUrl;

@@ -3,8 +3,10 @@ package com.yrazlik.lol.service;
 import java.util.Map;
 
 import com.yrazlik.lol.pojo.ChampionDetailResponse;
+import com.yrazlik.lol.pojo.ChampionDto;
 import com.yrazlik.lol.pojo.ChampionImageDto;
 import com.yrazlik.lol.pojo.QueueDto;
+import com.yrazlik.lol.pojo.SpellDto;
 import com.yrazlik.lol.pojo.StaticDataDto;
 import com.yrazlik.lol.request.ChampionDetailRequest;
 import com.yrazlik.lol.request.ChampionImageRequest;
@@ -18,7 +20,9 @@ public interface DataDragonService {
 	public ChampionImageDto getChampionImages(ChampionImageRequest championImageRequest);
 	public ChampionDetailResponse getChampionDetailById(ChampionDetailRequest championDetailRequest);
 	public AllChampionsResponse getAllChampions(String locale);
+	public Map<Long, ChampionDto> getAllChampionsMap(String locale);
 	public AllItemsResponse getAllItems(String locale);
 	public AllSpellsResponse getAllSpells(String locale);
+	public Map<Integer, SpellDto> getAllSpellsMap(String locale);
 	public Map<Integer, QueueDto> getQueueTypes(String locale);
 }
