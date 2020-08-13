@@ -4,10 +4,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
+import com.yrazlik.lol.callable.MatchDetailExecutorTask;
 import com.yrazlik.lol.httpclient.LolHttpClient;
 import com.yrazlik.lol.pojo.ChampionDto;
 import com.yrazlik.lol.pojo.ChampionMasteryDTO;
@@ -39,6 +45,9 @@ public class MatchServiceImpl implements MatchService {
 	
 	@Autowired
 	private DataDragonService dataDragonService;
+	
+	@Autowired
+	private ThreadPoolTaskExecutor threadPoolExecutor;
 
 	@Override
 	public MatchListDto getMatchListByAccountId(RequestGetMatchListByAccountId request) {
@@ -80,64 +89,103 @@ public class MatchServiceImpl implements MatchService {
 				}
 				
 				Map<Integer, QueueDto> queueTypes = dataDragonService.getQueueTypes(request.getLanguage());
+				List<MatchDetailExecutorTask> taskList = new ArrayList<>();
 				
 				for(MatchReferenceDto match : matches) {
-					try {
-						RequestGetMatchDetail reqMatchDetail = new RequestGetMatchDetail(request.getLanguage(), request.getRegion(), match.getGameId());
-						MatchDto matchDto = getMatchDetail(reqMatchDetail);
-						if(queueTypes != null && queueTypes.containsKey(match.getQueue())) {
-							QueueDto queue = queueTypes.get(match.getQueue());
-							match.setQueueName(queue == null || queue.getDescription() == null ? "-" : queue.getDescription());
+					RequestGetMatchDetail reqMatchDetail = new RequestGetMatchDetail(request.getLanguage(), request.getRegion(), match.getGameId());
+					taskList.add(new MatchDetailExecutorTask(reqMatchDetail));
+				}
+				
+				
+				
+				Map<Long, MatchDto> matchList = new HashMap<>();
+				try {
+					List<Future<MatchDto>> matchFutures = threadPoolExecutor.getThreadPoolExecutor().invokeAll(taskList, 10000, TimeUnit.MILLISECONDS);
+					if(matchFutures != null) {
+						for(Future<MatchDto> future : matchFutures) {
+							try {
+								MatchDto match = future.get(70000, TimeUnit.MILLISECONDS);
+								if(match != null && match.getGameId() != 0) {
+									matchList.put(match.getGameId(), match);
+								}
+							} catch (ExecutionException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (TimeoutException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
-					
+					}
+				} catch (IllegalStateException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				List<MatchReferenceDto> matchesWithMatchDetail = new ArrayList<>();
+				
+				for(MatchReferenceDto match : matches) {
+					long gameId = match.getGameId();
+					if(matchList.containsKey(gameId)) {
+						MatchDto matchDto = matchList.get(gameId);
 						if(matchDto != null) {
-							List<ParticipantDto> participants = matchDto.getParticipants();
-							if(participants != null) {
-								for(ParticipantDto participant : participants) {
-									if(participant != null) {
-										Long championId = (long) participant.getChampionId();
-										String champNameId = championsMap.containsKey(championId) ? championsMap.get(championId).getChampId() : "";
-										participant.setChampionImageUrl(ServicePaths.DATA_DRAGON_CHAMPION_IMG_BASE_PATH + champNameId + ".png");
-										int spell1Id = participant.getSpell1Id(), spell2Id = participant.getSpell2Id();
-										if(spellsMap.containsKey(spell1Id)) {
-											SpellDto spell = spellsMap.get(spell1Id);
-											if(spell != null) {
-												ImageDto img = spell.getImage();
-												if(img != null) {
-													participant.setSpell1Url(img.getFull());
+							if(queueTypes != null && queueTypes.containsKey(match.getQueue())) {
+								QueueDto queue = queueTypes.get(match.getQueue());
+								match.setQueueName(queue == null || queue.getDescription() == null ? "-" : queue.getDescription());
+							}
+						
+							if(matchDto != null) {
+								List<ParticipantDto> participants = matchDto.getParticipants();
+								if(participants != null) {
+									for(ParticipantDto participant : participants) {
+										if(participant != null) {
+											Long championId = (long) participant.getChampionId();
+											String champNameId = championsMap.containsKey(championId) ? championsMap.get(championId).getChampId() : "";
+											participant.setChampionImageUrl(ServicePaths.DATA_DRAGON_CHAMPION_IMG_BASE_PATH + champNameId + ".png");
+											int spell1Id = participant.getSpell1Id(), spell2Id = participant.getSpell2Id();
+											if(spellsMap.containsKey(spell1Id)) {
+												SpellDto spell = spellsMap.get(spell1Id);
+												if(spell != null) {
+													ImageDto img = spell.getImage();
+													if(img != null) {
+														participant.setSpell1Url(img.getFull());
+													}
 												}
 											}
-										}
-										
-										if(spellsMap.containsKey(spell2Id)) {
-											SpellDto spell = spellsMap.get(spell2Id);
-											if(spell != null) {
-												ImageDto img = spell.getImage();
-												if(img != null) {
-													participant.setSpell2Url(img.getFull());
+											
+											if(spellsMap.containsKey(spell2Id)) {
+												SpellDto spell = spellsMap.get(spell2Id);
+												if(spell != null) {
+													ImageDto img = spell.getImage();
+													if(img != null) {
+														participant.setSpell2Url(img.getFull());
+													}
 												}
 											}
-										}
-										ParticipantStatsDto stats = participant.getStats();
-										if(stats != null) {
-											stats.setItem0ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem0() + ".png");
-											stats.setItem1ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem1() + ".png");
-											stats.setItem2ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem2() + ".png");
-											stats.setItem3ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem3() + ".png");
-											stats.setItem4ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem4() + ".png");
-											stats.setItem5ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem5() + ".png");
-											stats.setItem6ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem6() + ".png");
+											ParticipantStatsDto stats = participant.getStats();
+											if(stats != null) {
+												stats.setItem0ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem0() + ".png");
+												stats.setItem1ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem1() + ".png");
+												stats.setItem2ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem2() + ".png");
+												stats.setItem3ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem3() + ".png");
+												stats.setItem4ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem4() + ".png");
+												stats.setItem5ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem5() + ".png");
+												stats.setItem6ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem6() + ".png");
+											}
 										}
 									}
 								}
 							}
+							match.setMatchDto(matchDto);
+							matchesWithMatchDetail.add(match);
 						}
-						match.setMatchDto(matchDto);
-					} catch (Exception e) {
-						match.setMatchDto(null);
+						
 					}
-					
 				}
+				response.setMatches(matchesWithMatchDetail);
 			} else {
 				response.setEnd(true);
 			}
