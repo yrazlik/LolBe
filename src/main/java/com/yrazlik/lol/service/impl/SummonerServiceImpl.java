@@ -86,7 +86,7 @@ public class SummonerServiceImpl implements SummonerService {
 	@SuppressWarnings("deprecation")
 	@Override
 	public GetSummonerByNameResponse findSummonerByName(RequestGetSummonerByName request) {
-		String url = UrlUtil.buildSummonerSearchUrl(request.getRegion(), URLEncoder.encode(request.getSummonerName()));
+		String url = UrlUtil.buildSummonerSearchUrl(request.getRegion(), request.getSummonerName());
 		RiotApiResponse riotApiResponse = lolHttpClient.makeGetRequest(url);
 		String responseBody = riotApiResponse.getBody();
 		GetSummonerByNameResponse response =  new Gson().fromJson(responseBody, GetSummonerByNameResponse.class);
