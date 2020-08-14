@@ -278,7 +278,7 @@ public class SummonerServiceImpl implements SummonerService {
 								SingleParticipantMatchReferenceDto singleParticipantMatchReferenceDto = new SingleParticipantMatchReferenceDto(match.getGameId(),
 										match.getRole(), match.getSeason(), match.getPlatformId(), match.getChampion(), match.getQueue(), match.getQueueName(), match.getLane(), match.getTimestamp());
 								
-								SingleParticipantMatchDto singleParticipantMatchDto = new SingleParticipantMatchDto(matchDto.getGameId(), matchDto.getQueueId(), matchDto.getGameType(), matchDto.getPlatformId(), matchDto.getGameCreation(), matchDto.getSeasonId(), matchDto.getGameVersion(), matchDto.getMapId(), matchDto.getGameMode());
+								SingleParticipantMatchDto singleParticipantMatchDto = new SingleParticipantMatchDto(matchDto.getGameId(), matchDto.getQueueId(), matchDto.getGameType(), matchDto.getPlatformId(), matchDto.getGameCreation(), matchDto.getSeasonId(), matchDto.getGameVersion(), matchDto.getMapId(), matchDto.getGameMode(), matchDto.getGameDuration());
 								singleParticipantMatchDto.setParticipantIdentitiy(currentParticipantIdentity);;
 								singleParticipantMatchDto.setParticipant(currentParticipantDto);
 								singleParticipantMatchReferenceDto.setMatchDto(singleParticipantMatchDto);

@@ -8,6 +8,7 @@ public class SingleParticipantMatchDto {
 	private String gameType;
 	private String platformId;
 	private long gameCreation;
+	private long gameDuration;
 	private int seasonId;
 	private String gameVersion;
 	private int mapId;
@@ -19,7 +20,7 @@ public class SingleParticipantMatchDto {
 		super();
 	}
 	public SingleParticipantMatchDto(long gameId, int queueId, String gameType, String platformId, long gameCreation,
-			int seasonId, String gameVersion, int mapId, String gameMode) {
+			int seasonId, String gameVersion, int mapId, String gameMode, long gameDuration) {
 		super();
 		this.gameId = gameId;
 		this.queueId = queueId;
@@ -30,6 +31,7 @@ public class SingleParticipantMatchDto {
 		this.gameVersion = gameVersion;
 		this.mapId = mapId;
 		this.gameMode = gameMode;
+		this.gameDuration = gameDuration;
 	}
 	public long getGameId() {
 		return gameId;
@@ -96,6 +98,12 @@ public class SingleParticipantMatchDto {
 	}
 	public void setParticipant(ParticipantDto participant) {
 		this.participant = participant;
+	}
+	public long getGameDuration() {
+		return gameDuration;
+	}
+	public void setGameDuration(long gameDuration) {
+		this.gameDuration = gameDuration;
 	}
 	
 	

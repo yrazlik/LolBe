@@ -209,11 +209,10 @@ public class MatchServiceImpl implements MatchService {
 		RiotApiResponse riotApiResponse = lolHttpClient.makeGetRequest(url);
 		String responseBody = riotApiResponse.getBody();
 		MatchDto response =  new Gson().fromJson(responseBody, MatchDto.class);
-		
+
 		if(response != null) {
 			Map<Long, ChampionDto> championsMap = dataDragonService.getAllChampionsMap(request.getLanguage());
 			Map<Integer, SpellDto> spellsMap = dataDragonService.getAllSpellsMap(request.getLanguage());
-			Map<Integer, QueueDto> queueTypes = dataDragonService.getQueueTypes(request.getLanguage());
 			List<ParticipantDto> participants = response.getParticipants();
 			
 			if(participants != null) {

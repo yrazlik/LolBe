@@ -7,6 +7,7 @@ public class MatchDto {
 	private long gameId;
 	private List<ParticipantIdentityDto> participantIdentities;
 	private int queueId;
+	private long gameDuration;
 	private String gameType;
 	private List<TeamStatsDto> teams;
 	private String platformId;
@@ -87,6 +88,12 @@ public class MatchDto {
 	}
 	public void setParticipants(List<ParticipantDto> participants) {
 		this.participants = participants;
+	}
+	public long getGameDuration() {
+		return gameDuration;
+	}
+	public void setGameDuration(long gameDuration) {
+		this.gameDuration = gameDuration;
 	}
 	
 	
