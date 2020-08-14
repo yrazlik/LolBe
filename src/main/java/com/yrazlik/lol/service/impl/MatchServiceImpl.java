@@ -27,6 +27,8 @@ import com.yrazlik.lol.pojo.ParticipantStatsDto;
 import com.yrazlik.lol.pojo.PlayerDto;
 import com.yrazlik.lol.pojo.QueueDto;
 import com.yrazlik.lol.pojo.RequestGetMatchDetail;
+import com.yrazlik.lol.pojo.SingleParticipantMatchDto;
+import com.yrazlik.lol.pojo.SingleParticipantMatchReferenceDto;
 import com.yrazlik.lol.pojo.SpellDto;
 import com.yrazlik.lol.request.RequestGetMatchListByAccountId;
 import com.yrazlik.lol.response.AllChampionsResponse;
@@ -207,6 +209,51 @@ public class MatchServiceImpl implements MatchService {
 		RiotApiResponse riotApiResponse = lolHttpClient.makeGetRequest(url);
 		String responseBody = riotApiResponse.getBody();
 		MatchDto response =  new Gson().fromJson(responseBody, MatchDto.class);
+		
+		if(response != null) {
+			Map<Long, ChampionDto> championsMap = dataDragonService.getAllChampionsMap(request.getLanguage());
+			Map<Integer, SpellDto> spellsMap = dataDragonService.getAllSpellsMap(request.getLanguage());
+			Map<Integer, QueueDto> queueTypes = dataDragonService.getQueueTypes(request.getLanguage());
+			List<ParticipantDto> participants = response.getParticipants();
+			
+			if(participants != null) {
+				for(ParticipantDto participant : participants) {
+					Long championId = (long) participant.getChampionId();
+					String champNameId = championsMap.containsKey(championId) ? championsMap.get(championId).getChampId() : "";
+					participant.setChampionImageUrl(ServicePaths.DATA_DRAGON_CHAMPION_IMG_BASE_PATH + champNameId + ".png");
+					int spell1Id = participant.getSpell1Id(), spell2Id = participant.getSpell2Id();
+					if(spellsMap.containsKey(spell1Id)) {
+						SpellDto spell = spellsMap.get(spell1Id);
+						if(spell != null) {
+							ImageDto img = spell.getImage();
+							if(img != null) {
+								participant.setSpell1Url(img.getFull());
+							}
+						}
+					}
+					
+					if(spellsMap.containsKey(spell2Id)) {
+						SpellDto spell = spellsMap.get(spell2Id);
+						if(spell != null) {
+							ImageDto img = spell.getImage();
+							if(img != null) {
+								participant.setSpell2Url(img.getFull());
+							}
+						}
+					}
+					ParticipantStatsDto stats = participant.getStats();
+					if(stats != null) {
+						stats.setItem0ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem0() + ".png");
+						stats.setItem1ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem1() + ".png");
+						stats.setItem2ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem2() + ".png");
+						stats.setItem3ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem3() + ".png");
+						stats.setItem4ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem4() + ".png");
+						stats.setItem5ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem5() + ".png");
+						stats.setItem6ImageUrl(ServicePaths.ITEM_IMAGES_BASE_URL + stats.getItem6() + ".png");
+					}
+				}
+			}
+		}
 		return response;
 	}
 	
