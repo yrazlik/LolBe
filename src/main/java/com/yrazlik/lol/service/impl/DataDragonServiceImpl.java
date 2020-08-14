@@ -130,7 +130,7 @@ public class DataDragonServiceImpl implements DataDragonService {
 					for(int i = 0; i < spells.size(); i++) {
 						SpellDto spell = spells.get(i);
 						spell.setVideoUrl(URI.create(ServicePaths.CHAMPION_ABILITIES_VIDEOS_BASE_URL
-				                + Utils.makeFourDigit(String.valueOf(champion.getId())) + "_" + "0" + i + ".mp4").toString());
+				                + Utils.makeFourDigit(String.valueOf(champion.getId())) + "_" + "0" + (i+1) + ".mp4").toString());
 						ImageDto spellImg = spell.getImage();
 						if(spellImg != null && spellImg.getFull() != null) {
 							spellImg.setFull(ServicePaths.CHAMPION_SPELL_IMAGE_BASE_URL + spellImg.getFull());
@@ -222,7 +222,7 @@ public class DataDragonServiceImpl implements DataDragonService {
 				for(int i = 0; i < spells.size(); i++) {
 					SpellDto spell = spells.get(i);
 					spell.setVideoUrl(URI.create(ServicePaths.CHAMPION_ABILITIES_VIDEOS_BASE_URL
-			                + Utils.makeFourDigit(String.valueOf(champion.getId())) + "_" + "0" + i + ".mp4").toString());
+			                + Utils.makeFourDigit(String.valueOf(champion.getId())) + "_" + "0" + (i+2) + ".mp4").toString());
 					ImageDto spellImg = spell.getImage();
 					if(spellImg != null && spellImg.getFull() != null) {
 						spellImg.setFull(ServicePaths.CHAMPION_SPELL_IMAGE_BASE_URL + spellImg.getFull());
@@ -232,7 +232,7 @@ public class DataDragonServiceImpl implements DataDragonService {
 			PassiveDto passive = champion.getPassive();
 			if(passive != null) {
 				passive.setVideoUrl(URI.create(ServicePaths.CHAMPION_ABILITIES_VIDEOS_BASE_URL
-			                + Utils.makeFourDigit(String.valueOf(champion.getId())) + "_" + "05.mp4").toString());
+			                + Utils.makeFourDigit(String.valueOf(champion.getId())) + "_" + "01.mp4").toString());
 				ImageDto passiveImg = passive.getImage();
 				if(passiveImg != null && passiveImg.getFull() != null) {
 					passiveImg.setFull(ServicePaths.CHAMPION_PASSIVE_IMAGE_BASE_URL + passiveImg.getFull());
