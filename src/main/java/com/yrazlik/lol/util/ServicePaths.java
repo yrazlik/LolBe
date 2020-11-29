@@ -2,7 +2,7 @@ package com.yrazlik.lol.util;
 
 public class ServicePaths {
 
-	public static final String LATEST_VERSION = "10.16.1";
+	public static final String LATEST_VERSION = "10.24.1";
 	public static final String PATH_WEEKLY_FREE_ROTATION = "/champion-rotations";
 	public static final String DATA_DRAGON_CHAMPION_STATIC_DATA = "/champion.json";
 	public static final String DATA_DRAGON_CHAMPION_DETAIL_STATIC_DATA = "/champion/{0}.json";
