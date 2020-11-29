@@ -3,6 +3,8 @@ import static com.yrazlik.lol.util.PlatformConstants.*;
 
 public class UrlUtil {
 	
+	public static final boolean API_KEY_ENABLED = true;
+	
 	public static String buildWeeklyRotationsUrl(String regionCode, String servicePath) {
 		Region region = Region.createRegionFromRegionCode(regionCode);
 		return PROTOCOL + region.getRegionCode() + "." + API_BASE_PATH + API_PLATFORM_PATH + WEEKLY_FREE_API_VERSION + servicePath;

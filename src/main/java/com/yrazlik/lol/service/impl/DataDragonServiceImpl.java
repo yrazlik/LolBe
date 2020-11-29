@@ -28,11 +28,11 @@ import com.yrazlik.lol.pojo.BlockItemDto;
 import com.yrazlik.lol.pojo.ChampionDetailResponse;
 import com.yrazlik.lol.pojo.ChampionDto;
 import com.yrazlik.lol.pojo.ChampionImageDto;
+import com.yrazlik.lol.pojo.ChampionInfo;
 import com.yrazlik.lol.pojo.ChampionRpIpDto;
 import com.yrazlik.lol.pojo.ChampionRpIpResponse;
 import com.yrazlik.lol.pojo.ImageDto;
 import com.yrazlik.lol.pojo.ItemDto;
-import com.yrazlik.lol.pojo.LeagueEntryDto;
 import com.yrazlik.lol.pojo.PassiveDto;
 import com.yrazlik.lol.pojo.QueueDto;
 import com.yrazlik.lol.pojo.RecommendedDto;
@@ -45,7 +45,9 @@ import com.yrazlik.lol.response.AllChampionsResponse;
 import com.yrazlik.lol.response.AllItemsResponse;
 import com.yrazlik.lol.response.AllSpellsResponse;
 import com.yrazlik.lol.response.RiotApiResponse;
+import com.yrazlik.lol.response.WeeklyFreeRotationResponse;
 import com.yrazlik.lol.service.DataDragonService;
+import com.yrazlik.lol.service.WeeklyFreeRotationService;
 import com.yrazlik.lol.util.DateUtils;
 import com.yrazlik.lol.util.ServicePaths;
 import com.yrazlik.lol.util.UrlUtil;
@@ -79,6 +81,7 @@ public class DataDragonServiceImpl implements DataDragonService {
 	private ResourceLoader resourceLoader;
 
 	private Map<String, ChampionRpIpDto> championCosts = new HashMap<>();
+	private ChampionInfo weeklyFreeChampionInfoFromFile;
 	
 	@PostConstruct
 	private void loadChampionCosts() {
@@ -97,6 +100,25 @@ public class DataDragonServiceImpl implements DataDragonService {
 
 		    ChampionRpIpResponse response = new Gson().fromJson(costsStr, ChampionRpIpResponse.class);
 		    championCosts = response.getCosts();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		Resource resource2 = resourceLoader.getResource("classpath:weeklyfree.json");
+		try {
+			InputStream inputStream = resource2.getInputStream();
+			
+			InputStreamReader isReader = new InputStreamReader(inputStream);
+		    BufferedReader reader = new BufferedReader(isReader);
+		    StringBuffer sb = new StringBuffer();
+		    String line, weeklyFreeStr;
+		    while((line = reader.readLine())!= null){
+		       sb.append(line);
+		    }
+		    weeklyFreeStr = sb.toString();
+
+		    ChampionInfo response = new Gson().fromJson(weeklyFreeStr, ChampionInfo.class);
+		    weeklyFreeChampionInfoFromFile = response;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -467,6 +489,11 @@ public class DataDragonServiceImpl implements DataDragonService {
 		}
 		
 		return queuesMap;
+	}
+	
+	@Override
+	public ChampionInfo getWeeklyFreeRotationsFromFile() {
+		return weeklyFreeChampionInfoFromFile;
 	}
 	
 }

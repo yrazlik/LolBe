@@ -32,10 +32,16 @@ public class WeeklyFreeRotationServiceImpl implements WeeklyFreeRotationService 
 	@Override
 	@Cacheable(value="weeklyFreeRotation", key="{#request?.language, #request?.region}", unless="#result == null")
 	public WeeklyFreeRotationResponse getWeeklyFreeRotation(WeeklyFreeRotationRequest request) {
-		String url = UrlUtil.buildWeeklyRotationsUrl(request.getRegion(), ServicePaths.PATH_WEEKLY_FREE_ROTATION);
-		RiotApiResponse riotApiResponse = lolHttpClient.makeGetRequest(url);
-		String responseBody = riotApiResponse.getBody();
-		ChampionInfo championInfo = new Gson().fromJson(responseBody, ChampionInfo.class);
+		ChampionInfo championInfo;
+		if(UrlUtil.API_KEY_ENABLED) {
+			String url = UrlUtil.buildWeeklyRotationsUrl(request.getRegion(), ServicePaths.PATH_WEEKLY_FREE_ROTATION);
+			RiotApiResponse riotApiResponse = lolHttpClient.makeGetRequest(url);
+			String responseBody = riotApiResponse.getBody();
+			championInfo = new Gson().fromJson(responseBody, ChampionInfo.class);
+		} else {
+			championInfo = dataDragonService.getWeeklyFreeRotationsFromFile();
+		}
+		
 		StaticDataDto staticData = dataDragonService.getAllChampionInfoStaticData(request.getLanguage());
 		Map<String, ChampionDto> dataMap = staticData.getData() == null ? new HashMap<String, ChampionDto>() : staticData.getData();
 		List<Integer> freeChampions = championInfo.getFreeChampionIds();

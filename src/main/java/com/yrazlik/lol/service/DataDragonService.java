@@ -5,6 +5,7 @@ import java.util.Map;
 import com.yrazlik.lol.pojo.ChampionDetailResponse;
 import com.yrazlik.lol.pojo.ChampionDto;
 import com.yrazlik.lol.pojo.ChampionImageDto;
+import com.yrazlik.lol.pojo.ChampionInfo;
 import com.yrazlik.lol.pojo.QueueDto;
 import com.yrazlik.lol.pojo.SpellDto;
 import com.yrazlik.lol.pojo.StaticDataDto;
@@ -25,4 +26,5 @@ public interface DataDragonService {
 	public AllSpellsResponse getAllSpells(String locale);
 	public Map<Integer, SpellDto> getAllSpellsMap(String locale);
 	public Map<Integer, QueueDto> getQueueTypes(String locale);
+	public ChampionInfo getWeeklyFreeRotationsFromFile();
 }

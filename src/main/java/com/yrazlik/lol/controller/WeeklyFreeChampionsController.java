@@ -22,11 +22,13 @@ public class WeeklyFreeChampionsController {
 
 	@RequestMapping(method = RequestMethod.GET, value = "/weeklyFreeRotation.json")
 	public BaseResponse<WeeklyFreeRotationResponse> getWeeklyFreeRotation(HttpServletRequest request) throws JsonSyntaxException, IOException {
+		WeeklyFreeRotationResponse weeklyFreeRotationsResponse;
 		WeeklyFreeRotationRequest weeklyFreeRotationRequest = new WeeklyFreeRotationRequest(
 				request.getHeader(PlatformConstants.HEADER_LANGUAGE),
 				request.getHeader(PlatformConstants.HEADER_REGION));
-		WeeklyFreeRotationResponse weeklyFreeRotationsResponse = weeklyFreeRotationService.getWeeklyFreeRotation(weeklyFreeRotationRequest);
+		weeklyFreeRotationsResponse = weeklyFreeRotationService.getWeeklyFreeRotation(weeklyFreeRotationRequest);
 		return new BaseResponse<WeeklyFreeRotationResponse>(weeklyFreeRotationsResponse);
+
 	}
 
 }
